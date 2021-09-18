@@ -64,42 +64,7 @@ create an iam user with the following permissions for terraform:
          "arn:aws:apprunner:us-east-1:150301572911:autoscalingconfiguration/*/*/*",
          "arn:aws:apprunner:us-east-1:150301572911:service/*/*"
        ]
-     },
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "dynamodb:ListContributorInsights",
-                "dynamodb:DescribeReservedCapacityOfferings",
-                "dynamodb:ListGlobalTables",
-                "dynamodb:ListTables",
-                "dynamodb:DescribeReservedCapacity",
-                "dynamodb:ListBackups",
-                "dynamodb:PurchaseReservedCapacityOfferings",
-                "dynamodb:DescribeLimits",
-                "dynamodb:ListExports",
-                "dynamodb:ListStreams"
-            ],
-            "Resource": "*"
-        },
-        {
-            "Sid": "VisualEditor1",
-            "Effect": "Allow",
-            "Action": "dynamodb:*",
-            "Resource": "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*"
-        },
-        {
-            "Sid": "VisualEditor2",
-            "Effect": "Allow",
-            "Action": "dynamodb:*",
-            "Resource": [
-                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/stream/*",
-                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/export/*",
-                "arn:aws:dynamodb::150301572911:global-table/pbin_*",
-                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/backup/*",
-                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/index/*"
-            ]
-        }
+     }
    ]
 }
 ```
@@ -178,7 +143,7 @@ for with access key terraform user
 
 create access key https://console.aws.amazon.com/iam/home#/users/pbin?section=security_credentials
 
-- `AWS_ACCESS_KEY_ID`
+- ``
 - `AWS_SECRET_ACCESS_KEY`
 
 push this repo to the new project on gitlab 
