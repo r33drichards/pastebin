@@ -21,6 +21,18 @@ variable "image_tag"  {
   default = "latest"
 }
 
+variable "pbin_aws_access_key_id" {}
+
+variable "pbin_aws_secret_access_key" {}
+
+variable "pbin_table_name" {
+  default = "pbin_prod"
+}
+
+variable "pbin_url" {
+  default = "https://pbin.jjk.is"
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -45,6 +57,13 @@ resource "aws_apprunner_service" "pbin" {
     image_repository {
       image_configuration {
         port = "8000"
+        runtime_environment_variables = {
+          AWS_ACCESS_KEY_ID = var.pbin_aws_access_key_id
+          AWS_SECRET_ACCESS_KEY = var.pbin_aws_secret_access_key
+          AWS_REGION = var.aws_region
+          PBIN_TABLE_NAME = var.pbin_table_name
+          PBIN_URL = var.pbin_url
+        }
       }
 	  image_identifier      = "${aws_ecr_repository.pbin.repository_url}:${var.image_tag}"
       image_repository_type = "ECR"

@@ -64,8 +64,88 @@ create an iam user with the following permissions for terraform:
          "arn:aws:apprunner:us-east-1:150301572911:autoscalingconfiguration/*/*/*",
          "arn:aws:apprunner:us-east-1:150301572911:service/*/*"
        ]
-     }
+     },
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:ListContributorInsights",
+                "dynamodb:DescribeReservedCapacityOfferings",
+                "dynamodb:ListGlobalTables",
+                "dynamodb:ListTables",
+                "dynamodb:DescribeReservedCapacity",
+                "dynamodb:ListBackups",
+                "dynamodb:PurchaseReservedCapacityOfferings",
+                "dynamodb:DescribeLimits",
+                "dynamodb:ListExports",
+                "dynamodb:ListStreams"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/stream/*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/export/*",
+                "arn:aws:dynamodb::150301572911:global-table/pbin_*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/backup/*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/index/*"
+            ]
+        }
    ]
+}
+```
+
+dynamodb iam permissions
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:ListContributorInsights",
+                "dynamodb:DescribeReservedCapacityOfferings",
+                "dynamodb:ListGlobalTables",
+                "dynamodb:ListTables",
+                "dynamodb:DescribeReservedCapacity",
+                "dynamodb:ListBackups",
+                "dynamodb:PurchaseReservedCapacityOfferings",
+                "dynamodb:DescribeLimits",
+                "dynamodb:ListExports",
+                "dynamodb:ListStreams"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "dynamodb:*",
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/stream/*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/export/*",
+                "arn:aws:dynamodb::150301572911:global-table/pbin_*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/backup/*",
+                "arn:aws:dynamodb:us-east-1:150301572911:table/pbin_*/index/*"
+            ]
+        }
+    ]
 }
 ```
 
@@ -110,3 +190,16 @@ git add .
 git commit -m "Initial commit"
 git push -u origin main
 ```
+
+## Deployment
+
+### required environment variables
+
+| key                     | description | required | example                  |
+|-------------------------|-------------|----------|--------------------------|
+| `AWS_ACCESS_KEY_ID`     |             | yes      |                          |
+| `AWS_SECRET_ACCESS_KEY` |             | yes      |                          |
+| `AWS_REGION`            |             | yes      | us-east-1                         |
+| `PBIN_TABLE_NAME`       |             | yes      | pbin_dev                 |
+| `PBIN_URL`              |             | yes      | https://pbin.jjk.is:8000 |
+
