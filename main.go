@@ -229,10 +229,7 @@ func init() {
 			},
 		}
 
-		err := MakeTable(svc, attributeDefinitions, keySchema, aws.String(PBIN_TABLE_NAME))
-		if err != nil {
-			log.Panicln(err)
-		}
+		go MakeTable(svc, attributeDefinitions, keySchema, aws.String(PBIN_TABLE_NAME))
 	}
 
 }
