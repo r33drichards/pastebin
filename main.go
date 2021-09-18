@@ -321,7 +321,6 @@ function copyText(){
 
 <select name="lang" id="language">
     <option value="">--Please choose an option--</option>
-    <option value="abap">abap</option>
 	<option value="abap">abap</option>
 	<option value="apex">apex</option>
 	<option value="azcli">azcli</option>
