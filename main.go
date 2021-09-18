@@ -337,7 +337,6 @@ function copyText(){
 	<option value="dockerfile">dockerfile</option>
 	<option value="ecl">ecl</option>
 	<option value="elixir">elixir</option>
-	<option value="fillers">fillers</option>
 	<option value="fsharp">fsharp</option>
 	<option value="go">go</option>
 	<option value="graphql">graphql</option>
