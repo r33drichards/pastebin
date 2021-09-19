@@ -106,7 +106,6 @@
                 </select>
                 <button
                         class="
-                        float-right
             py-2
             px-4
             font-semibold
