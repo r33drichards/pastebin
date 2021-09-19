@@ -15,6 +15,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"os"
 	"strings"
+	"html/template"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -23,6 +24,8 @@ import (
 )
 
 var (
+	//go:embed templates/paste.html.tpl
+	PASTE_TEMPLATE_TEXT string
 	PBIN_TABLE_NAME = os.Getenv("PBIN_TABLE_NAME")
 	PBIN_URL        = os.Getenv("PBIN_URL")
 )
@@ -34,6 +37,10 @@ type Paste struct {
 	SK       string
 	Language string
 	Text     string
+}
+
+type PasteTemplateContent struct {
+	Text, Language string
 }
 
 //https://stackoverflow.com/questions/2377881/how-to-get-a-md5-hash-from-a-string-in-golang
@@ -275,26 +282,16 @@ func main() {
 			}
 			lang := paste.Language
 			text := paste.Text
-			// warning! this is unsafe
-			fmt.Fprintf(writer, `<!DOCTYPE html>
-<html>
-<head>
-
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css" rel="stylesheet" />
-</head>
-<body>
-<button onclick="copyText()">Copy!</button>
-<pre><code id="paste" class="language-%s">%s</code></pre>
-
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-%s.min.js" ></script>
-</body>
-<script>
-function copyText(){
-    navigator.clipboard.writeText(document.getElementById("paste").textContent)
-}
-</script>
-</html>`, lang, text, lang)
+			ptc := PasteTemplateContent{
+				text,
+				lang,
+			}
+			t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
+			err = t.ExecuteTemplate(writer, "paste", ptc)
+			if err != nil{
+				// TODO return 500
+				panic(err)
+			}
 
 		default:
 			http.Redirect(writer, request, PBIN_URL, 301)
