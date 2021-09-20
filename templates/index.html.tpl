@@ -61,7 +61,7 @@
                     <option value="mips">mips</option>
                     <option value="msdax">msdax</option>
                     <option value="mysql">mysql</option>
-                    <option value="objective->objective-c</option>
+                    <option value="objective-c">objective-c</option>
                     <option value="pascal">pascal</option>
                     <option value="pascaligo">pascaligo</option>
                     <option value="perl">perl</option>
