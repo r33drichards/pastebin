@@ -16,7 +16,6 @@
   </head>
   <body>
   <div class="container-xl h-screen overflow-y-hidden">
-
     <div class="max-h-1/5 p-4">
        <button
               class="
@@ -35,11 +34,7 @@
       </button>
     </div>
     <div id="monacoContainer" class="w-full h-4/5"></div>
-
-
-
   </div>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
   <script>
     // require is provided by loader.min.js.
@@ -60,7 +55,7 @@
       );
       window.copyText = function () {
         navigator.clipboard.writeText(
-                m.getValue(),
+                m.getValue()
         );
       }
     });
