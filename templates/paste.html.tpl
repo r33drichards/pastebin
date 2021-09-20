@@ -31,7 +31,7 @@
           "
           onclick="navigator.clipboard.writeText(window.location)"
         >
-          share url
+          copy link to test
         </button>
         <button
           class="
