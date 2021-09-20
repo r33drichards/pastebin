@@ -66,9 +66,5 @@
     });
 
   </script>
-    <pre><code id="paste" class="language-{{ .Language }}">{{ .Text }}</code></pre>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-{{ .Language }}.min.js"></script>
   </body>
-
 </html>
