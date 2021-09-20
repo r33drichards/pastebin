@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
+	"github.com/didip/tollbooth"
 	_ "github.com/joho/godotenv/autoload"
 	"html/template"
 	"os"
@@ -242,74 +243,77 @@ func init() {
 	}
 
 }
-
-func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("OK"))
-		if err != nil {
-			log.Println(err)
-		}
-	})
-	http.HandleFunc("/paste", func(writer http.ResponseWriter, request *http.Request) {
-		sess := session.Must(session.NewSession())
-		svc := dynamodb.New(sess)
-		switch request.Method {
-		case "POST":
-			if err := request.ParseForm(); err != nil {
-				fmt.Fprintf(writer, "ParseForm() err: %v", err)
-				return
-			}
-			text := request.FormValue("text")
-			lang := request.FormValue("lang")
-			hash := GetMD5Hash(text)
-			id, err := AddTableItem(svc, aws.String(PBIN_TABLE_NAME), aws.String(text), aws.String(hash), aws.String(lang), 10)
-
-			if err != nil {
-				// todo 500 err
-				panic(err)
-			}
-			q := request.URL.Query()
-			q.Del("text")
-			q.Del("lang")
-			q.Set("id", *id)
-			request.URL.RawQuery = q.Encode()
-			http.Redirect(writer, request, request.URL.String(), 301)
-		case "GET":
-			id := request.URL.Query().Get("id")
-			log.Println(id)
-			paste, err := GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
-			if err != nil {
-				// TODO return 500 err
-				panic(err)
-			}
-			lang := paste.Language
-			text := paste.Text
-			ptc := PasteTemplateContent{
-				text,
-				lang,
-			}
-			t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
-			err = t.ExecuteTemplate(writer, "paste", ptc)
-			if err != nil {
-				// TODO return 500
-				panic(err)
-			}
-
-		default:
-			http.Redirect(writer, request, PBIN_URL, 301)
-
-		}
-	})
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			http.Error(w, "404 not found.", http.StatusNotFound)
+func handlePaste(writer http.ResponseWriter, request *http.Request) {
+	sess := session.Must(session.NewSession())
+	svc := dynamodb.New(sess)
+	switch request.Method {
+	case "POST":
+		if err := request.ParseForm(); err != nil {
+			fmt.Fprintf(writer, "ParseForm() err: %v", err)
 			return
 		}
-		_, err := w.Write([]byte(INDEX_TEMPLATE_TEXT))
+		text := request.FormValue("text")
+		lang := request.FormValue("lang")
+		hash := GetMD5Hash(text)
+		id, err := AddTableItem(svc, aws.String(PBIN_TABLE_NAME), aws.String(text), aws.String(hash), aws.String(lang), 10)
+
 		if err != nil {
-			log.Println(err)
+			// todo 500 err
+			panic(err)
 		}
-	})
+		q := request.URL.Query()
+		q.Del("text")
+		q.Del("lang")
+		q.Set("id", *id)
+		request.URL.RawQuery = q.Encode()
+		http.Redirect(writer, request, request.URL.String(), 301)
+	case "GET":
+		id := request.URL.Query().Get("id")
+		paste, err := GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
+		if err != nil {
+			// TODO return 500 err
+			panic(err)
+		}
+		lang := paste.Language
+		text := paste.Text
+		ptc := PasteTemplateContent{
+			text,
+			lang,
+		}
+		t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
+		err = t.ExecuteTemplate(writer, "paste", ptc)
+		if err != nil {
+			// TODO return 500
+			panic(err)
+		}
+
+	default:
+		http.Redirect(writer, request, PBIN_URL, 301)
+
+	}
+}
+
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.Error(w, "404 not found.", http.StatusNotFound)
+		return
+	}
+	_, err := w.Write([]byte(INDEX_TEMPLATE_TEXT))
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	_, err := w.Write([]byte("OK"))
+	if err != nil {
+		log.Println(err)
+	}
+}
+func main() {
+	http.Handle("/health", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleHealth))
+	http.Handle("/paste", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handlePaste))
+	http.Handle("/", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleIndex))
 	log.Println("server listening")
 	http.ListenAndServe(":8000", nil)
 }
