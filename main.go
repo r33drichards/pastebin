@@ -33,8 +33,6 @@ var (
 	PBIN_URL            = os.Getenv("PBIN_URL")
 )
 
-// Item defines the item for the table
-// snippet-start:[dynamodb.go.get_item.struct]
 type Paste struct {
 	PK       string
 	SK       string
@@ -60,13 +58,11 @@ func GetMD5Hash(text string) string {
 //     If success, a list of the tables and nil
 //     Otherwise, nil and an error from the call to ListTables
 func GetTables(sess *session.Session, limit *int64) ([]*string, error) {
-	// snippet-start:[dynamodb.go.list_all_tables.call]
 	svc := dynamodb.New(sess)
 
 	result, err := svc.ListTables(&dynamodb.ListTablesInput{
 		Limit: limit,
 	})
-	// snippet-end:[dynamodb.go.list_all_tables.call]
 	if err != nil {
 		return nil, err
 	}
@@ -98,8 +94,7 @@ func MakeTable(svc dynamodbiface.DynamoDBAPI, attributeDefinitions []*dynamodb.A
 // Inputs:
 //     sess is the current session, which provides configuration for the SDK's service clients
 //     table is the name of the table
-//     title is the movie title
-//     year is when the movie was released
+//     pk is the partition key of the table https://aws.amazon.com/blogs/database/choosing-the-right-dynamodb-partition-key/
 // Output:
 //     If success, the information about the table item and nil
 //     Otherwise, nil and an error from the call to GetItem or UnmarshalMap
@@ -120,12 +115,10 @@ func GetTableItemPK(svc dynamodbiface.DynamoDBAPI, table, pk *string) (*Paste, e
 	}
 
 	result, err := svc.Query(&queryInput)
-	// snippet-end:[dynamodb.go.get_item.call]
 	if err != nil {
 		return nil, err
 	}
 
-	// snippet-start:[dynamodb.go.get_item.unmarshall]
 	if result.Items == nil {
 		msg := "Could not find '" + *pk + "'"
 		return nil, errors.New(msg)
@@ -134,7 +127,6 @@ func GetTableItemPK(svc dynamodbiface.DynamoDBAPI, table, pk *string) (*Paste, e
 	item := Paste{}
 
 	err = dynamodbattribute.UnmarshalMap(result.Items[0], &item)
-	// snippet-end:[dynamodb.go.get_item.unmarshall]
 	if err != nil {
 		return nil, err
 	}
@@ -145,11 +137,11 @@ func GetTableItemPK(svc dynamodbiface.DynamoDBAPI, table, pk *string) (*Paste, e
 // AddTableItem adds an item to an Amazon DynamoDB table
 // Inputs:
 //     sess is the current session, which provides configuration for the SDK's service clients
-//     year is the year when the movie was released
 //     table is the name of the table
-//     title is the movie title
-//     plot is a summary of the plot of the movie
-//     rating is the movie rating, from 0.0 to 10.0
+//     text is the text of the paste
+//     hash is an md5sum hash, which gets rehashed on duplicate entries
+//     lang is the programming language of the paste
+//     trys is how many times to rehash when a duplicate entry is found
 // Output:
 //     If success, nil
 //     Otherwise, an error from the call to PutItem
@@ -157,7 +149,6 @@ func AddTableItem(svc dynamodbiface.DynamoDBAPI, table, text, hash, lang *string
 	if trys == 0 {
 		return nil, errors.New("trys exceeded")
 	}
-	// snippet-start:[dynamodb.go.create_new_item.assign_struct]
 	currentTime := time.Now()
 
 	item := Paste{
@@ -168,12 +159,10 @@ func AddTableItem(svc dynamodbiface.DynamoDBAPI, table, text, hash, lang *string
 	}
 
 	av, err := dynamodbattribute.MarshalMap(item)
-	// snippet-end:[dynamodb.go.create_new_item.assign_struct]
 	if err != nil {
 		return nil, err
 	}
 
-	// snippet-start:[dynamodb.go.create_new_item.call]
 	_, err = svc.PutItem(&dynamodb.PutItemInput{
 		Item:                av,
 		TableName:           table,

@@ -2,6 +2,8 @@
 
 - https://gitlab.com/reedrichards/pbin
 
+try it out at [pbin.jjk.is](https://pbin.jjk.is)
+
 ## Quickstart
 
 if you have [just](https://github.com/casey/just) and [docker](https://docs.docker.com/get-docker/) installed, you can
