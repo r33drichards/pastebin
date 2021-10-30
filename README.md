@@ -10,7 +10,8 @@ if you have [just](https://github.com/casey/just) and [docker](https://docs.dock
 start the project with `just run`. Otherwise run
 
 ```shell
-$ docker run -p 8000:8000 pbin:latest
+$ docker build -t pbin:latest . 
+$ docker run --env-file .env -p 8000:8000 pbin:latest
 ```
 
 ## Setup and Configuration
