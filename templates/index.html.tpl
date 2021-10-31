@@ -114,7 +114,8 @@
           "
           onclick="window.paste()"
         >
-          paste!
+          <i class="fas fa-paste"></i>
+          Paste
         </button>
       </div>
       <div id="monacoContainer" class="w-full h-4/5"></div>
@@ -183,5 +184,7 @@
         form.submit();
       }
     </script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
   </body>
 </html>
