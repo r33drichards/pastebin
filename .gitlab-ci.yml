@@ -80,7 +80,7 @@ deploy-ecr:
     - echo $CI_COMMIT_SHORT_SHA
     - echo $IMAGE_TAG
   only:
-    - main
+    - master
     
 init:
   image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
