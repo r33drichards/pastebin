@@ -122,8 +122,78 @@
       <div id="monacoContainer" class="w-full h-4/5"></div>
     </div>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
     <script>
+
+      function convertGuessLangToMonacoLang(lang) {
+        // https://github.com/yoeo/guesslang/blob/92cd9f9b3ea7379553a76044512c678107af2061/guesslang/data/languages.json
+        return {
+          "asm": "asm",
+          "bat": "bat",
+          "c": "cpp",
+          "cpp": "cpp",
+          "clj": "clojure",
+          "cmake": "cmake",
+          "cbl": "cobol",
+          "coffee": "coffee",
+          "css": "css",
+          "csv": "csv",
+          "dart": "dart",
+          "dm": "dm",
+          "dockerfile": "dockerfile",
+          "ex": "elixir",
+          "erl": "erlang",
+          "f90": "fortran",
+          "go": "go",
+          "groovy": "groovy",
+          "hs": "haskell",
+          "html": "html",
+          "ini": "ini",
+          "java": "java",
+          "js": "javascript",
+          "json": "json",
+          "jl": "julia",
+          "kt": "kotlin",
+          "lisp": "lisp",
+          "lua": "lua",
+          "makefile": "makefile",
+          "md": "markdown",
+          "matlab": "matlab",
+          "mm": "objective-c",
+          "ml": "ocaml",
+          "pas": "pascal",
+          "pm": "perl",
+          "php": "php",
+          "ps1": "powershell",
+          "prolog": "prolog",
+          "py": "python",
+          "r": "r",
+          "rb": "ruby",
+          "rs": "rust",
+          "scala": "scala",
+          "sh": "shell",
+          "sql": "sql",
+          "swift": "swift",
+          "tex": "tex",
+          "toml": "toml",
+          "ts": "typescript",
+          "v": "verilog",
+          "vba": "vb",
+          "xml": "xml",
+          "yaml": "yaml"
+        }[lang]
+      }
+      async function detectLanguage(
+        code
+      ) {
+        const guesser = new GuessLang();
+        const result = await guesser.runModel(code);
+        console.log(result);
+        const lang =  result.reduce((a, b) => (a.confidence > b.confidence ? a : b)).languageId
+        return convertGuessLangToMonacoLang(lang)
+      }
+
       // require is provided by loader.min.js.
       require.config({
         paths: {
@@ -139,6 +209,22 @@
             theme: "vs-dark",
           }
         );
+        // add a listener to monaco editor change event 
+        // to update the language of the editor when the 
+        // language is set to auto detect
+
+        m.onDidChangeModelContent(function (e) {
+          if (document.getElementById("language").value === "detect") {
+            detectLanguage(m.getValue()).then((language) => {
+              monaco.editor.setModelLanguage(
+                m.getModel(),
+                language
+              );
+              // document.getElementById("language").value = language;
+            });
+          }
+        });
+
         document
           .getElementById("language")
           .addEventListener("change", function () {
@@ -149,8 +235,19 @@
             );
           });
         window.paste = function () {
+          const lang = document.getElementById("language").value;
+          if (lang === "detect") {
+            detectLanguage(m.getValue()).then((language) => {
+              const data = {
+                lang: language,
+                text: m.getValue(),
+              };
+              post("/paste", data);
+            });
+            return;
+          }
           data = {
-            lang: document.getElementById("language").value,
+            lang: lang,
             text: m.getValue(),
           };
           post("/paste", data);
