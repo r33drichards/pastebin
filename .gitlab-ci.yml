@@ -71,7 +71,7 @@ deploy-ecr:
   stage: build
   image: docker:19.03.12
   script:
-    - docker load -i  < result.tar.gz
+    - docker load < result.tar.gz
     - docker tag pbin:latest $IMAGE_TAG
     - apk update && apk add --no-cache curl jq python3 py3-pip
     - pip install awscli
