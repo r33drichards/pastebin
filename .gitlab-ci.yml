@@ -120,6 +120,7 @@ apply:
   stage: deploy
   needs:
     - plan
+    - deploy-ecr
   environment:
     name: production
   script:
