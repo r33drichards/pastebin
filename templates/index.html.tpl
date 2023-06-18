@@ -206,7 +206,11 @@
           {
             value: "",
             language: document.getElementById("language").value,
-            theme: "vs-dark",
+            // if prefers dark vs-dark else vs-light
+            theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "vs-dark"
+              : "vs-light",
+            automaticLayout: true // <<== the important part
           }
         );
         // add a listener to monaco editor change event 
