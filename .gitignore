@@ -1,2 +1,4 @@
 .env
 pbin
+/gomod2nix-template
+result 

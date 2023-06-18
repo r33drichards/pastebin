@@ -26,6 +26,7 @@
           name="lang"
           id="language"
         >
+          <option value="detect">detect</option>
           <option value="">text</option>
           <option value="abap">abap</option>
           <option value="apex">apex</option>

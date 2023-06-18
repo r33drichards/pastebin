@@ -6,6 +6,24 @@ try it out at [pbin.jjk.is](https://pbin.jjk.is)
 
 ## Quickstart
 
+### build docker image 
+
+```
+ nix build .#dockerImage
+ ```
+
+```
+docker load -i ./result
+```
+
+```
+docker images
+```
+
+```
+docker run --env-file .env -p 8000:8000 pbin:latest
+```
+
 if you have [just](https://github.com/casey/just) and [docker](https://docs.docker.com/get-docker/) installed, you can
 start the project with `just run`. Otherwise run
 

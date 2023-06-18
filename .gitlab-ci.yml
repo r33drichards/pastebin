@@ -52,17 +52,36 @@ test:
 build:
   needs: []
   stage: build
+  image: nixos/nix
+  script:
+    - nix build --extra-experimental-features flakes --extra-experimental-features nix-command .#dockerImage
+    - cp $(readlink result) result.tar.gz
+  artifacts:
+    paths:
+      - result.tar.gz
+    expire_in: 1 week
+  cache:
+    paths:
+      - /nix/store
+
+deploy-ecr:
+  needs: [build]
+  dependencies:
+    - build
+  stage: build
   image: docker:19.03.12
   script:
+    - docker load -i  < result.tar.gz
+    - docker tag pbin:latest $IMAGE_TAG
     - apk update && apk add --no-cache curl jq python3 py3-pip
     - pip install awscli
-    - $(aws ecr get-login --no-include-email --region us-east-1)
-    - docker build -t $IMAGE_TAG .
+    - eval $(aws ecr get-login --no-include-email --region us-east-1)
     - docker push $IMAGE_TAG
     - echo $CI_COMMIT_SHORT_SHA
-  allow_failure: True
-
-
+    - echo $IMAGE_TAG
+  only:
+    - main
+    
 init:
   image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
   stage: prepare
