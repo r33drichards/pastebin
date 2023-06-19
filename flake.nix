@@ -20,13 +20,10 @@
             name = "pbin";
             tag = "latest";
             config.Cmd = [ "${app}/bin/pbin" ];
-            config.Env = [ "SSL_CERT_FILE=/certs/ca-bundle.crt" ];
+            config.Env = [ "SSL_CERT_FILE=/etc/ssl/certs/ca-bundle.crt" ];
             contents = [ pkgs.cacert ];
-            extraCommands = ''
-              mkdir -p /certs
-              cp ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt /certs/
-            '';
           };
+
         in
         {
           packages.default = app;
