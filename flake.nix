@@ -13,13 +13,17 @@
             inherit system;
             overlays = [ gomod2nix.overlays.default ];
           };
-          
+
           app = pkgs.callPackage ./. { };
-          
+
           dockerImage = pkgs.dockerTools.buildLayeredImage {
             name = "pbin";
             tag = "latest";
             config.Cmd = [ "${app}/bin/pbin" ];
+            extraCommands = ''
+              mkdir -p /etc/ssl/certs
+              cp ${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt /etc/ssl/certs/
+            '';
           };
         in
         {
