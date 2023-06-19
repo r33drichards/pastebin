@@ -56,10 +56,14 @@
         document.getElementById("monacoContainer"),
         {
           value: {{ .Text }},
-      language: {{ .Language }},
-      theme: "vs-dark",
-      readOnly: true
-                }
+          language: {{ .Language }},
+          readOnly: true,
+          // if prefers dark vs-dark else vs-light
+          theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "vs-dark"
+            : "vs-light",
+          automaticLayout: true
+        }
     );
     window.copyText = function () {
       navigator.clipboard.writeText(

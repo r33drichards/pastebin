@@ -213,7 +213,7 @@
             theme: window.matchMedia("(prefers-color-scheme: dark)").matches
               ? "vs-dark"
               : "vs-light",
-            automaticLayout: true // <<== the important part
+            automaticLayout: true 
           }
         );
         // add a listener to monaco editor change event 
