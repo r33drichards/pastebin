@@ -190,7 +190,10 @@
         const guesser = new GuessLang();
         const result = await guesser.runModel(code);
         console.log(result);
-        const lang =  result.reduce((a, b) => (a.confidence > b.confidence ? a : b)).languageId
+        const lang =  result.reduce(
+          (a, b) => (a.confidence > b.confidence ? a : b), 
+          {languageId: "text", confidence: 0},
+        ).languageId
         return convertGuessLangToMonacoLang(lang)
       }
 
