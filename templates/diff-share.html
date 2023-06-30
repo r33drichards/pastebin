@@ -54,14 +54,13 @@
         const m = monaco.editor.createDiffEditor(
             document.getElementById("monacoContainer"),
             {
-                originalEditable: true,
                 automaticLayout: true,
                 readOnly: true,
-            // if prefers dark vs-dark else vs-light
-            theme: window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "vs-dark"
-                : "vs-light",
-            automaticLayout: true
+                // if prefers dark vs-dark else vs-light
+                theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "vs-dark"
+                    : "vs-light",
+                automaticLayout: true
                 }
         );
         m.setModel({
