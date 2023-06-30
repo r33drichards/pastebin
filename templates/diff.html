@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PBIN pastebin with Monaco Editor</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      data-name="vs/editor/editor.main"
+      href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css"
+    />
+  </head>
+  <body>
+    <div class="container-xl h-screen overflow-y-hidden">
+      <div class="max-h-1/5 p-4">
+        <a class="py-2 px-4 font-bold text-black" href="/"> PBIN </a>
+      <a class="py-2 px-4 font-bold text-black" href="/diff"> DIFF </a>
+        <button class="
+            py-2
+            px-4
+            font-semibold
+            rounded-lg
+            shadow-md
+            text-white
+            bg-green-500
+            hover:bg-green-700
+          " onclick="window.paste()">
+          <i class="fas fa-save" aria-hidden="true"></i> Save diff </button>
+      </div>
+      <div id="monacoContainer" class="w-full h-4/5"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+    <script>
+
+      // require is provided by loader.min.js.
+      require.config({
+        paths: {
+          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs",
+        },
+      });
+      require(["vs/editor/editor.main"], () => {
+
+        const originalModel = monaco.editor.createModel(
+            /* set from `originalModel`: */ ``,
+            "text/plain"
+        );
+
+
+        const modifiedModel = monaco.editor.createModel(
+            /* set from `modifiedModel`: */ ``,
+            "text/plain"
+        );
+
+        const m = monaco.editor.createDiffEditor(
+            document.getElementById("monacoContainer"),
+            {
+                originalEditable: true,
+                automaticLayout: true,
+                // if prefers dark vs-dark else vs-light
+                theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+                  ? "vs-dark"
+                  : "vs-light",
+                  }
+        );
+        m.setModel({
+            original: originalModel,
+            modified: modifiedModel,
+        });
+        window.paste = function () {
+          const data = {
+            original: originalModel.getValue(),
+            modified: modifiedModel.getValue(),
+          };
+          post("/diff", data);
+        };
+      });
+      // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+      /**
+       * sends a request to the specified url from a form. this will change the window location.
+       * @param {string} path the path to send the post request to
+       * @param {object} params the parameters to add to the url
+       * @param {string} [method=post] the method to use on the form
+       */
+      function post(path, params, method = "post") {
+        // The rest of this code assumes you are not using a library.
+        // It can be made less verbose if you use one.
+        const form = document.createElement("form");
+        form.method = method;
+        form.action = path;
+
+        for (const key in params) {
+          if (params.hasOwnProperty(key)) {
+            const hiddenField = document.createElement("input");
+            hiddenField.type = "hidden";
+            hiddenField.name = key;
+            hiddenField.value = params[key];
+
+            form.appendChild(hiddenField);
+          }
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    </script>
+    <!-- fontawesome -->
+    <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
+  </body>
+</html>

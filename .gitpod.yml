@@ -9,3 +9,8 @@ tasks:
     command: just run
 
 
+vscode:
+  extensions:
+    - github.copilot
+    - arrterian.nix-env-selector
+    - golang.go
