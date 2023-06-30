@@ -274,7 +274,7 @@ func AddDiff(svc dynamodbiface.DynamoDBAPI, table, hash, oldText, newText *strin
 		if awsErr, ok := err.(awserr.Error); ok {
 			// process SDK error
 			if awsErr.Code() == dynamodb.ErrCodeConditionalCheckFailedException {
-				return AddDiff(svc, table, hash, oldText, newText, trys-1)
+				return AddDiff(svc, table, aws.String(GetMD5Hash(*hash)), oldText, newText, trys-1)
 			} else {
 				// todo err 500
 				panic(err)
