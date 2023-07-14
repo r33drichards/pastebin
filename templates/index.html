@@ -221,7 +221,10 @@
         // define a monaco completion item provider
         const completionProvider = {
           provideCompletionItems: async function (model, position) {
-            data = await getCompletion(model.getTextUntilPosition(position));
+            let rangeUntilPosition = new monaco.Range(1, 1, position.lineNumber, position.column);
+
+            let textUntilPosition = model.getValueInRange(rangeUntilPosition);
+            data = await getCompletion(textUntilPosition);
             return data.completions.map((completion) => {
               return {
                 label: completion,
