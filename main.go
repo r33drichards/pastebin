@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	_ "embed"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -464,22 +465,39 @@ func getCompletion(text, openapikey string) ([]string, error) {
 	c := openai.NewClient(openapikey)
 	ctx := context.Background()
 
-	req := openai.CompletionRequest{
-		Model:     openai.GPT4,
-		MaxTokens: 4096 * 2,
-		Prompt:    text,
+	req := openai.ChatCompletionRequest{
+		Model: openai.GPT4,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role: "system",
+				Content: `you are masquerading as github copilot and only provide completions to the text you are given
+you only output the completions and do not say anything else. the next message is the text your are given:`,
+			},
+			{
+				Role:    "user",
+				Content: text,
+			},
+		},
 	}
-	resp, err := c.CreateCompletion(ctx, req)
+	resp, err := c.CreateChatCompletion(ctx, req)
 	if err != nil {
 		fmt.Printf("Completion error: %v\n", err)
 		return []string{}, err
 	}
 	txts := []string{}
 	for _, choice := range resp.Choices {
-		txts = append(txts, choice.Text)
+		txts = append(txts, choice.Message.Content)
 	}
 	return txts, nil
 
+}
+
+type completionResponse struct {
+	Completions []string `json:"completions"`
+}
+
+func (c completionResponse) ToJsonBytes() ([]byte, error) {
+	return json.Marshal(c)
 }
 
 func handleCompletion(writer http.ResponseWriter, request *http.Request) {
@@ -498,7 +516,12 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 		}
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusOK)
-		_, err = writer.Write([]byte(fmt.Sprintf(`{"completions": %v}`, completion)))
+		fmt.Println(completion)
+		resp, err := completionResponse{completion}.ToJsonBytes()
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = writer.Write(resp)
 		if err != nil {
 			log.Println(err)
 		}

@@ -206,13 +206,13 @@
       });
       require(["vs/editor/editor.main"], () => {
         async function getCompletion(text) {
-          // post to /complete
-          const response = await fetch("/complete", {
+          // post to /complete?text=text url encoded;
+
+          const response = await fetch("/complete?text=" + encodeURIComponent(text), {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ text: text }),
           });
           const data = await response.json();
           return data;
@@ -225,6 +225,7 @@
 
             let textUntilPosition = model.getValueInRange(rangeUntilPosition);
             data = await getCompletion(textUntilPosition);
+            console.log(data);
             return data.completions.map((completion) => {
               return {
                 label: completion,
