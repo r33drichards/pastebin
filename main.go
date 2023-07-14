@@ -466,7 +466,7 @@ func getCompletion(text, openapikey string) ([]string, error) {
 	ctx := context.Background()
 
 	req := openai.ChatCompletionRequest{
-		Model: openai.GPT4,
+		Model: openai.GPT3Dot5Turbo,
 		Messages: []openai.ChatCompletionMessage{
 			{
 				Role: "system",
