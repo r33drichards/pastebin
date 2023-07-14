@@ -513,18 +513,24 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 		completion, err := getCompletion(text, openapikey)
 		if err != nil {
 			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		writer.Header().Set("Content-Type", "application/json")
-		writer.WriteHeader(http.StatusOK)
-		fmt.Println(completion)
 		resp, err := completionResponse{completion}.ToJsonBytes()
 		if err != nil {
 			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		_, err = writer.Write(resp)
 		if err != nil {
 			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+		writer.WriteHeader(http.StatusOK)
+
 	default:
 		http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
 	}
