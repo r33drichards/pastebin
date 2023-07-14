@@ -13,12 +13,6 @@
       data-name="vs/editor/editor.main"
       href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css"
     />
-    <style>
-      .monaco-editor {
-        white-space: pre-wrap; /* Wrap lines */
-        word-wrap: break-word; /* Break words */
-      }
-    </style>
   </head>
   <body>
     <div class="container-xl h-screen overflow-y-hidden">
@@ -274,6 +268,8 @@
             });
           }
         });
+
+        m.editor.updateOptions({ wordWrap: "on" })
 
 
         document

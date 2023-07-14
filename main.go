@@ -525,8 +525,6 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-		// json response with list of completions
-
 	default:
 		http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
 	}
