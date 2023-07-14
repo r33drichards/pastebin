@@ -205,6 +205,36 @@
         },
       });
       require(["vs/editor/editor.main"], () => {
+        async function getCompletion(text) {
+          // post to /complete
+          const response = await fetch("/complete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ text: text }),
+          });
+          const data = await response.json();
+          return data;
+        }
+
+        // define a monaco completion item provider
+        const completionProvider = {
+          provideCompletionItems: async function (model, position) {
+            data = await getCompletion(model.getTextUntilPosition(position));
+            return data.completions.map((completion) => {
+              return {
+                label: completion,
+                kind: monaco.languages.CompletionItemKind.Text,
+              };
+            });
+          },
+        };
+
+        monacoLanguages = monaco.languages.getLanguages().map((lang) => {
+          monaco.languages.registerCompletionItemProvider(lang.id, completionProvider);
+        });
+
         var m = monaco.editor.create(
           document.getElementById("monacoContainer"),
           {
@@ -232,6 +262,7 @@
             });
           }
         });
+
 
         document
           .getElementById("language")

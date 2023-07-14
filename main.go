@@ -511,7 +511,7 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	http.Handle("/completions", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleCompletion))
+	http.Handle("/complete", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleCompletion))
 	http.Handle("/diff", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleDiff))
 	http.Handle("/health", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleHealth))
 	http.Handle("/paste", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handlePaste))
