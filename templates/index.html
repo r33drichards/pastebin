@@ -226,13 +226,14 @@
             let textUntilPosition = model.getValueInRange(rangeUntilPosition);
             data = await getCompletion(textUntilPosition);
             console.log(data);
-            return data.completions.map((completion) => {
-              return {
-                label: completion,
-                kind: monaco.languages.CompletionItemKind.Text,
-              };
-            });
-          },
+            return{
+              suggestions:  data.completions.map((completion) => {
+                return {
+                  insertText: completion,
+                };
+              })
+          }
+        },
         };
 
         monacoLanguages = monaco.languages.getLanguages().map((lang) => {
