@@ -547,7 +547,9 @@ func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
 }
 
 func main() {
-	handleWithDefaultRateLimiter("/complete", handleCompletion)
+	if os.Getenv("OPENAPIKEY") != "" {
+		handleWithDefaultRateLimiter("/complete", handleCompletion)
+	}
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
