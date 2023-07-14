@@ -225,7 +225,6 @@
 
             let textUntilPosition = model.getValueInRange(rangeUntilPosition);
             data = await getCompletion(textUntilPosition);
-            console.log(data);
             return{
               suggestions:  data.completions.map((completion) => {
                 return {

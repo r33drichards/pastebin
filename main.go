@@ -441,6 +441,13 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		}
 		diff, err := GetDiff(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
 
+		if err != nil {
+			log.Print(err)
+			// 404
+			writer.WriteHeader(http.StatusNotFound)
+			return
+		}
+
 		dtc := DiffTemplateContent{
 			diff.OldText,
 			diff.NewText,
@@ -449,8 +456,8 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		t := template.Must(template.New("diff-share").Parse(DIFF_SHARED_TEMPLATE_TEXT))
 		err = t.ExecuteTemplate(writer, "diff-share", dtc)
 		if err != nil {
-			// TODO return 500
-			panic(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 	default:
@@ -535,12 +542,16 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 
 }
 
+func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
+	http.Handle(p, tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), h))
+}
+
 func main() {
-	http.Handle("/complete", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleCompletion))
-	http.Handle("/diff", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleDiff))
-	http.Handle("/health", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleHealth))
-	http.Handle("/paste", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handlePaste))
-	http.Handle("/", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleIndex))
+	handleWithDefaultRateLimiter("/complete", handleCompletion)
+	handleWithDefaultRateLimiter("/diff", handleDiff)
+	handleWithDefaultRateLimiter("/health", handleHealth)
+	handleWithDefaultRateLimiter("/paste", handlePaste)
+	handleWithDefaultRateLimiter("/", handleIndex)
 	log.Println("server listening")
 	http.ListenAndServe(":8000", nil)
 }
