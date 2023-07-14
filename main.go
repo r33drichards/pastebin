@@ -126,7 +126,7 @@ func GetTableItemPK(svc dynamodbiface.DynamoDBAPI, table, pk *string) (*Paste, e
 	builder := expression.NewBuilder().WithKeyCondition(keyCond)
 	expr, err := builder.Build()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	queryInput := dynamodb.QueryInput{
 		KeyConditionExpression:    expr.KeyCondition(),
