@@ -529,8 +529,6 @@ func handleCompletion(writer http.ResponseWriter, request *http.Request) {
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		writer.WriteHeader(http.StatusOK)
-
 	default:
 		http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
 	}
