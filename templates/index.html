@@ -250,7 +250,8 @@
             theme: window.matchMedia("(prefers-color-scheme: dark)").matches
               ? "vs-dark"
               : "vs-light",
-            automaticLayout: true 
+            automaticLayout: true,
+            wordWrap: "on",
           }
         );
         // add a listener to monaco editor change event 
@@ -268,8 +269,6 @@
             });
           }
         });
-
-        m.editor.updateOptions({ wordWrap: "on" })
 
 
         document
