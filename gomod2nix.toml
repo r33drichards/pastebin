@@ -28,6 +28,9 @@ schema = 3
   [mod."github.com/pmezard/go-difflib"]
     version = "v1.0.0"
     hash = "sha256-/FtmHnaGjdvEIKAJtrUfEhV7EVo5A/eYrtdnUkuxLDA="
+  [mod."github.com/sashabaranov/go-openai"]
+    version = "v1.14.0"
+    hash = "sha256-9eNv8yTwCWxS8/NHpU8bzoTMiEDzbeIPPgKlKkKiM0s="
   [mod."github.com/stretchr/objx"]
     version = "v0.1.0"
     hash = "sha256-az0Vd4MG3JXfaYbj0Q6AOmNkrXgmXDeQm8+BBiDXmdA="

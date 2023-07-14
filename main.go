@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/md5"
 	_ "embed"
 	"encoding/hex"
@@ -19,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/didip/tollbooth"
 	_ "github.com/joho/godotenv/autoload"
+	openai "github.com/sashabaranov/go-openai"
 
 	"log"
 	"net/http"
@@ -456,7 +458,60 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+func getCompletion(text, openapikey string) ([]string, error) {
+	// get completion from  openai
+
+	c := openai.NewClient(openapikey)
+	ctx := context.Background()
+
+	req := openai.CompletionRequest{
+		Model:     openai.GPT4,
+		MaxTokens: 4096 * 2,
+		Prompt:    text,
+	}
+	resp, err := c.CreateCompletion(ctx, req)
+	if err != nil {
+		fmt.Printf("Completion error: %v\n", err)
+		return []string{}, err
+	}
+	txts := []string{}
+	for _, choice := range resp.Choices {
+		txts = append(txts, choice.Text)
+	}
+	return txts, nil
+
+}
+
+func handleCompletion(writer http.ResponseWriter, request *http.Request) {
+	openapikey := os.Getenv("OPENAPIKEY")
+
+	switch request.Method {
+	case "POST":
+		if err := request.ParseForm(); err != nil {
+			fmt.Fprintf(writer, "ParseForm() err: %v", err)
+			return
+		}
+		text := request.FormValue("text")
+		completion, err := getCompletion(text, openapikey)
+		if err != nil {
+			log.Println(err)
+		}
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusOK)
+		_, err = writer.Write([]byte(fmt.Sprintf(`{"completions": %v}`, completion)))
+		if err != nil {
+			log.Println(err)
+		}
+		// json response with list of completions
+
+	default:
+		http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
+	}
+
+}
+
 func main() {
+	http.Handle("/completions", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleCompletion))
 	http.Handle("/diff", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleDiff))
 	http.Handle("/health", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handleHealth))
 	http.Handle("/paste", tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), handlePaste))
