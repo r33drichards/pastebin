@@ -39,3 +39,8 @@ variable "name" {
   description = "name of the instance in aws console"
   type       = string
 }
+
+variable "iam_policy" {
+  description = "IAM policy to attach to the instance"
+  type       = string
+}
