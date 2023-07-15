@@ -14,3 +14,4 @@ vscode:
     - github.copilot
     - arrterian.nix-env-selector
     - golang.go
+    - hashicorp.terraform
