@@ -2,7 +2,7 @@
 resource "aws_iam_policy" "grafana" {
   name        = var.name
   description = "Full access to EFS"
-  policy      = var.aws_iam_policy
+  policy      = var.iam_policy
 }
 
 ## create an iam role with the policy
