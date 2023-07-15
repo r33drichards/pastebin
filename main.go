@@ -302,7 +302,7 @@ func init() {
 	// create dynamodb table if it doesn't exist
 	createTable := true
 	for _, n := range tables {
-		if 0 == strings.Compare(*n, PBIN_TABLE_NAME) {
+		if strings.Compare(*n, PBIN_TABLE_NAME) == 0 {
 			createTable = false
 			break
 		}
@@ -360,7 +360,7 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		q.Del("lang")
 		q.Set("id", *id)
 		request.URL.RawQuery = q.Encode()
-		http.Redirect(writer, request, request.URL.String(), 301)
+		http.Redirect(writer, request, request.URL.String(), http.StatusMovedPermanently)
 	case "GET":
 		id := request.URL.Query().Get("id")
 		paste, err := GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
@@ -386,7 +386,7 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		}
 
 	default:
-		http.Redirect(writer, request, PBIN_URL, 301)
+		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
 
 	}
 }
@@ -433,7 +433,7 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		q.Del("modified")
 		q.Set("id", *id)
 		request.URL.RawQuery = q.Encode()
-		http.Redirect(writer, request, request.URL.String(), 301)
+		http.Redirect(writer, request, request.URL.String(), http.StatusMovedPermanently)
 	case "GET":
 		id := request.URL.Query().Get("id")
 		if id == "" {
@@ -465,7 +465,7 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		}
 
 	default:
-		http.Redirect(writer, request, PBIN_URL, 301)
+		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
 
 	}
 }
