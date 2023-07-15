@@ -24,8 +24,6 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	openai "github.com/sashabaranov/go-openai"
 
-	"log"
-	// import zap
 	"net/http"
 
 	"go.uber.org/zap"
