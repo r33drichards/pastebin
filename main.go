@@ -559,7 +559,9 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
-	// handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
+	if os.Getenv("OPENAPIKEY") != "" {
+		handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
+	}
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)

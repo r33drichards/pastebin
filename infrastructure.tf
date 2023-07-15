@@ -69,7 +69,6 @@ resource "aws_apprunner_service" "pbin" {
           AWS_REGION = var.aws_region
           PBIN_TABLE_NAME = var.pbin_table_name
           PBIN_URL = var.pbin_url
-          OPENAPIKEY = var.openapikey
         }
       }
 	  image_identifier      = "${aws_ecr_repository.pbin.repository_url}:${var.image_tag}"
