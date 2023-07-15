@@ -89,6 +89,11 @@ sudo apt install docker.io -y
 sudo systemctl start docker
 sudo systemctl enable docker
 
+sudo apt  install awscli -y
+
+# login to ecr
+eval $(aws ecr get-login --no-include-email --region us-east-1)
+
 # docker run --env-file .env -p 8000:8000 pbin:latest 
 sudo docker run -d --restart=always \
   -e AWS_ACCESS_KEY_ID=${var.pbin_aws_access_key_id} \
