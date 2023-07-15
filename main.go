@@ -516,6 +516,11 @@ func (c completionResponse) ToJsonBytes() ([]byte, error) {
 func handleCompletion(sugar *zap.SugaredLogger) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		openapikey := os.Getenv("OPENAPIKEY")
+		if openapikey == "" {
+			sugar.Error("OPENAPIKEY not set")
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
 		switch request.Method {
 		case "POST":
@@ -559,9 +564,7 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
-	if os.Getenv("OPENAPIKEY") != "" {
-		handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
-	}
+	handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
