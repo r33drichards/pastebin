@@ -33,6 +33,8 @@ variable "pbin_url" {
   default = "https://pbin.jjk.is"
 }
 
+variable "tailscale_auth_key" {}
+
 variable "openapikey" {
   type = string
 }
@@ -113,5 +115,6 @@ EOF
 }
 EOF
   name = "tsbin"
+  tailscale_auth_key = var.tailscale_auth_key
 
 }
