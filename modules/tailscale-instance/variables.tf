@@ -9,7 +9,7 @@ variable "aws_availability_zone" {
 variable "aws_tags" {
   type = map(string)
   default = {
-    application = "grafana"
+   
   }
 }
 
