@@ -43,7 +43,6 @@ EOF
   }
   depends_on = [ 
     aws_iam_instance_profile.grafana,
-    aws_instance.postgres
    ]
 
 }
