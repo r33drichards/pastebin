@@ -77,13 +77,3 @@ resource "aws_apprunner_service" "pbin" {
     }
   }
 }
-
-resource "aws_apprunner_auto_scaling_configuration" "pbin" {
-  service_arn = aws_apprunner_service.pbin.arn
-  min_concurrent_replica_count = 1
-  max_concurrent_replica_count = 2
-  auto_deployments_enabled = true
-  cpu = "1024"
-  memory = "2048"
-}
-
