@@ -81,6 +81,7 @@ resource "aws_apprunner_service" "pbin" {
 module "tailscale_instance" {
   source = "./modules/tailscale-instance"
   aws_region = var.aws_region
+  aws_availability_zone = "us-east-1a"
   user_data = <<EOF
 # install docker 
 sudo apt-get update
