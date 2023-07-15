@@ -366,7 +366,9 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		paste, err := GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
 		if err != nil {
 			// TODO return 500 err
-			panic(err)
+			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		lang := paste.Language
 		text := paste.Text
@@ -378,7 +380,9 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		err = t.ExecuteTemplate(writer, "paste", ptc)
 		if err != nil {
 			// TODO return 500
-			panic(err)
+			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 	default:
