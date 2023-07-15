@@ -94,7 +94,7 @@ sudo docker run -d --restart=always \
   -e AWS_SECRET_ACCESS_KEY=${var.pbin_aws_secret_access_key} \
   -e AWS_REGION=${var.aws_region} \
   -e PBIN_TABLE_NAME=${var.pbin_table_name} \
-  -e PBIN_URL=${var.name}:8000 \
+  -e PBIN_URL=tsbin:8000 \
   -e OPENAPIKEY=${var.openapikey} \
   -p 8000:8000 ${aws_ecr_repository.pbin.repository_url}:${var.image_tag}
 
