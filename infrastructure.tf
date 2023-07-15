@@ -77,7 +77,7 @@ resource "aws_apprunner_service" "pbin" {
 
 
 module "tailscale_instance" {
-  source "./modules/tailscale-instance"
+  source = "./modules/tailscale-instance"
   aws_region = var.aws_region
   user_data = <<EOF
 # install docker 
