@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -24,7 +25,10 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 
 	"log"
+	// import zap
 	"net/http"
+
+	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 )
@@ -511,39 +515,42 @@ func (c completionResponse) ToJsonBytes() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-func handleCompletion(writer http.ResponseWriter, request *http.Request) {
-	openapikey := os.Getenv("OPENAPIKEY")
+func handleCompletion(sugar *zap.SugaredLogger) func(writer http.ResponseWriter, request *http.Request) {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		openapikey := os.Getenv("OPENAPIKEY")
 
-	switch request.Method {
-	case "POST":
-		if err := request.ParseForm(); err != nil {
-			fmt.Fprintf(writer, "ParseForm() err: %v", err)
-			return
+		switch request.Method {
+		case "POST":
+			if err := request.ParseForm(); err != nil {
+				fmt.Fprintf(writer, "ParseForm() err: %v", err)
+				return
+			}
+			text := request.FormValue("text")
+			completion, err := getCompletion(text, openapikey)
+			sugar.Infow("completion_request", "text", text, "completion", completion, "completion_request", 1)
+			if err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			writer.Header().Set("Content-Type", "application/json")
+			resp, err := completionResponse{completion}.ToJsonBytes()
+			if err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			_, err = writer.Write(resp)
+			if err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		default:
+			http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
 		}
-		text := request.FormValue("text")
-		completion, err := getCompletion(text, openapikey)
-		if err != nil {
-			log.Println(err)
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		writer.Header().Set("Content-Type", "application/json")
-		resp, err := completionResponse{completion}.ToJsonBytes()
-		if err != nil {
-			log.Println(err)
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		_, err = writer.Write(resp)
-		if err != nil {
-			log.Println(err)
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	default:
-		http.Redirect(writer, request, PBIN_URL, http.StatusNotFound)
+
 	}
-
 }
 
 func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
@@ -551,13 +558,23 @@ func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
 }
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+	sugar := logger.Sugar()
+	// sugar.Infow("failed to fetch URL",
+	// 	// Structured context as loosely typed key-value pairs.
+	// 	"url", url,
+	// 	"attempt", 3,
+	// 	"backoff", time.Second,
+	// )
+	// sugar.Infof("Failed to fetch URL: %s", url)
 	if os.Getenv("OPENAPIKEY") != "" {
-		handleWithDefaultRateLimiter("/complete", handleCompletion)
+		handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
 	}
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
 	handleWithDefaultRateLimiter("/", handleIndex)
-	log.Println("server listening")
+	sugar.Infoln("Listening on port :8000")
 	http.ListenAndServe(":8000", nil)
 }
