@@ -33,6 +33,10 @@ variable "pbin_url" {
   default = "https://pbin.jjk.is"
 }
 
+variable "openapikey" {
+  type = string
+}
+
 provider "aws" {
   region = var.aws_region
 }
@@ -69,4 +73,45 @@ resource "aws_apprunner_service" "pbin" {
       image_repository_type = "ECR"
     }
   }
+}
+
+
+module "tailscale_instance" {
+  source "./modules/tailscale-instance"
+  aws_region = var.aws_region
+  user_data = <<EOF
+# install docker 
+sudo apt-get update
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# docker run --env-file .env -p 8000:8000 pbin:latest 
+sudo docker run -d --restart=always \
+  -e AWS_ACCESS_KEY_ID=${var.pbin_aws_access_key_id} \
+  -e AWS_SECRET_ACCESS_KEY=${var.pbin_aws_secret_access_key} \
+  -e AWS_REGION=${var.aws_region} \
+  -e PBIN_TABLE_NAME=${var.pbin_table_name} \
+  -e PBIN_URL=${var.name}:8000 \
+  -e OPENAPIKEY=${var.openapikey} \
+  -p 8000:8000 ${aws_ecr_repository.pbin.repository_url}:${var.image_tag}
+
+EOF
+# admin access 
+  iam_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }
+    ]
+
+}
+EOF
+  name = "tsbin"
+
 }
