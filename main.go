@@ -280,7 +280,7 @@ func AddDiff(svc dynamodbiface.DynamoDBAPI, table, hash, oldText, newText *strin
 				return AddDiff(svc, table, aws.String(GetMD5Hash(*hash)), oldText, newText, trys-1)
 			} else {
 				// todo err 500
-				panic(err)
+				return nil, err
 			}
 		}
 	}
