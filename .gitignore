@@ -2,3 +2,4 @@
 pbin
 /gomod2nix-template
 result 
+.direnv
