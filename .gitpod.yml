@@ -12,6 +12,7 @@ tasks:
 vscode:
   extensions:
     - github.copilot
-    - arrterian.nix-env-selector
     - golang.go
     - hashicorp.terraform
+    - bbenoist.nix
+    - mkhl.direnv
