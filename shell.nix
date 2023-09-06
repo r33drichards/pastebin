@@ -15,7 +15,8 @@ let
   goEnv = pkgs.mkGoEnv { pwd = ./.; };
 in
 pkgs.mkShell {
-  fortifyDisable = true;
+  hardeningDisable = [ "fortify" ];
+
   packages = [
     goEnv
     pkgs.gomod2nix
