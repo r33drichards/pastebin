@@ -9,10 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"io"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 	"time"
 
@@ -561,8 +559,6 @@ func handleCompletion(sugar *zap.SugaredLogger) func(writer http.ResponseWriter,
 func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
 	http.Handle(p, tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), h))
 }
-
-
 
 func main() {
 	logger, _ := zap.NewProduction()
