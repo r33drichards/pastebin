@@ -562,68 +562,12 @@ func handleWithDefaultRateLimiter(p string, h http.HandlerFunc) {
 	http.Handle(p, tollbooth.LimitFuncHandler(tollbooth.NewLimiter(2, nil), h))
 }
 
-func withTMPFile(f func(*os.File) error) error {
-	tmpfile, err := os.CreateTemp("", "")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove(tmpfile.Name()) // clean up
-	return f(tmpfile)
-}
 
-func createWasm(goProgram string) (io.Reader, error) {
-	wasmFileName := ""
-	err := withTMPFile(func(tmpfile *os.File) error {
-		// write go program to tmpfile
-		if _, err := tmpfile.Write([]byte(goProgram)); err != nil {
-			return err
-		}
-		// run go build on tmpfile
-		cmd := exec.Command("go", "build", "-o", tmpfile.Name()+".wasm", tmpfile.Name())
-		if err := cmd.Run(); err != nil {
-			return err
-		}
-		wasmFileName = tmpfile.Name() + ".wasm"
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	defer os.Remove(wasmFileName)
-	// read wasm file
-	return os.Open(wasmFileName)
-}
-
-func handleWasm(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "POST":
-		if err := r.ParseForm(); err != nil {
-			fmt.Fprintf(w, "ParseForm() err: %v", err)
-			return
-		}
-		goProgram := r.FormValue("go")
-		wasm, err := createWasm(goProgram)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		_, err = io.Copy(w, wasm)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	default:
-		http.Redirect(w, r, PBIN_URL, http.StatusNotFound)
-	}
-}
 
 func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
-	handleWithDefaultRateLimiter("/wasm", handleWasm)
 	handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
