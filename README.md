@@ -181,3 +181,10 @@ git push -u origin main
 | `AWS_REGION`            |             | yes      | us-east-1                |
 | `PBIN_TABLE_NAME`       |             | yes      | pbin_dev                 |
 | `PBIN_URL`              |             | yes      | https://pbin.jjk.is:8000 |
+
+
+## generate web assembly
+
+```shell
+curl -X POST -F "go=@hello/hello.go" http://localhost:8000/wasm --output hello.wasm
+```

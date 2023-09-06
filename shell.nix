@@ -15,6 +15,7 @@ let
   goEnv = pkgs.mkGoEnv { pwd = ./.; };
 in
 pkgs.mkShell {
+  fortifyDisable = true;
   packages = [
     goEnv
     pkgs.gomod2nix
@@ -23,5 +24,16 @@ pkgs.mkShell {
     pkgs.awscli
     pkgs.git
     pkgs.nixfmt
+    pkgs.golangci-lint
+    pkgs.gotools
+    pkgs.gopls
+    pkgs.go-outline
+    pkgs.gocode
+    pkgs.gopkgs
+    pkgs.gocode-gomod
+    pkgs.godef
+    pkgs.golint
+    pkgs.delve
+    pkgs.nixpkgs-fmt
   ];
 }

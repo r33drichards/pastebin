@@ -107,7 +107,6 @@ plan:
   script:
     - cd ${TF_ROOT}
     - gitlab-terraform init
-    - gitlab-terraform taint module.tailscale_instance.aws_instance.grafana 
     - gitlab-terraform plan
     - gitlab-terraform plan-json
   artifacts:
