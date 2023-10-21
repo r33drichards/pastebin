@@ -569,6 +569,11 @@ func main() {
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
 	handleWithDefaultRateLimiter("/", handleIndex)
-	sugar.Infoln("Listening on port :8000")
-	http.ListenAndServe(":8000", nil)
+	// get port from env PORT
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	sugar.Infow("starting_server", "port", port)
+	sugar.Fatal(http.ListenAndServe(":"+port, nil))
 }
