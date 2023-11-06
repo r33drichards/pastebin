@@ -1,8 +1,8 @@
 tidy:
     go mod tidy
-
-build: tidy
     gomod2nix 
+
+build: tidy 
     nix build .#dockerImage
     docker load -i ./result
 

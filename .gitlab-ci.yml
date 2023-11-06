@@ -1,43 +1,6 @@
 stages:
   - test
-  - build
-  - init
-  - prepare
-  - validate
-  - plan
   - deploy
-
-variables:
-  TF_ROOT: ${CI_PROJECT_DIR}
-  TF_ADDRESS: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/terraform/state/${CI_PROJECT_NAME}
-  TF_VAR_COMMIT_SHA: $CI_COMMIT_SHORT_SHA
-  # When using dind service we need to instruct docker, to talk with the
-  # daemon started inside of the service. The daemon is available with
-  # a network connection instead of the default /var/run/docker.sock socket.
-  #
-  # The 'docker' hostname is the alias of the service container as described at
-  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
-  #
-  # Note that if you're using the Kubernetes executor, the variable should be set to
-  # tcp://localhost:2375 because of how the Kubernetes executor connects services
-  # to the job container
-  # DOCKER_HOST: tcp://localhost:2375
-  #
-  # For non-Kubernetes executors, we use tcp://docker:2375
-  # DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
-  # when using dind, it's wise to use the overlayfs driver for
-  # improved performance.
-  DOCKER_DRIVER: overlay2
-  #
-  # This will instruct Docker not to start over TLS.
-  IMAGE_NAME: 150301572911.dkr.ecr.us-east-1.amazonaws.com/pbin
-  IMAGE_TAG: $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
-  TF_VAR_image_tag: $CI_COMMIT_SHORT_SHA
-
-
-services:
-  - docker:19.03.12-dind
 
 
 test:
@@ -49,86 +12,13 @@ test:
     - go vet -composites=false $(go list ./... | grep -v /vendor/)
     - go test -race $(go list ./... | grep -v /vendor/)
 
-build:
-  needs: []
-  stage: build
-  image: nixos/nix
-  script:
-    - nix build --extra-experimental-features flakes --extra-experimental-features nix-command .#dockerImage
-    - cp $(readlink result) result.tar.gz
-  artifacts:
-    paths:
-      - result.tar.gz
-    expire_in: 1 week
-  cache:
-    paths:
-      - /nix/store
 
-deploy-ecr:
-  needs: [build]
-  dependencies:
-    - build
-  stage: build
-  image: docker:19.03.12
-  script:
-    - docker load < result.tar.gz
-    - docker tag pbin:latest $IMAGE_TAG
-    - apk update && apk add --no-cache curl jq python3 py3-pip
-    - pip install awscli
-    - eval $(aws ecr get-login --no-include-email --region us-east-1)
-    - docker push $IMAGE_TAG
-    - echo $CI_COMMIT_SHORT_SHA
-    - echo $IMAGE_TAG
-  only:
-    - master
-    
-init:
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
-  stage: prepare
-  needs: []
-  script:
-    - cd ${TF_ROOT}
-    - gitlab-terraform init
-
-validate:
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
-  stage: validate
-  needs:
-    - init
-  script:
-    - cd ${TF_ROOT}
-    - gitlab-terraform validate
-
-plan:
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
-  stage: plan
-  needs:
-    - validate
-  script:
-    - cd ${TF_ROOT}
-    - gitlab-terraform init
-    - gitlab-terraform plan
-    - gitlab-terraform plan-json
-  artifacts:
-    name: plan
-    paths:
-      - ${TF_ROOT}/plan.cache
-    reports:
-      terraform: ${TF_ROOT}/plan.json
-
-apply:
-  image: registry.gitlab.com/gitlab-org/terraform-images/releases/1.0
+deploy-railway:
   stage: deploy
-  needs:
-    - plan
-    - deploy-ecr
-  environment:
-    name: production
-  script:
-    - cd ${TF_ROOT}
-    - gitlab-terraform apply
-  dependencies:
-    - plan
+  image: ubuntu
   only:
     - master
-
+  script:
+    - apt-get update && apt-get install -y curl
+    - curl -fsSL https://railway.app/install.sh | sh
+    - railway up --service=$RAILWAY_SERVICE_NAME -d

@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"crypto/md5"
 	_ "embed"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"net/http"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -21,10 +21,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	"github.com/didip/tollbooth"
+	"github.com/google/uuid"
 	_ "github.com/joho/godotenv/autoload"
 	openai "github.com/sashabaranov/go-openai"
-
-	"net/http"
 
 	"go.uber.org/zap"
 
@@ -60,9 +59,8 @@ type DiffTemplateContent struct {
 }
 
 // https://stackoverflow.com/questions/2377881/how-to-get-a-md5-hash-from-a-string-in-golang
-func GetMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
+func GetMD5Hash(_ string) string {
+	return uuid.New().String()
 }
 
 // GetTables retrieves a list of your Amazon DynamoDB tables
@@ -101,7 +99,6 @@ func GetTables(sess *session.Session, limit *int64) ([]*string, error) {
 //	If success, nil
 //	Otherwise, an error from the call to CreateTable
 func MakeTable(svc dynamodbiface.DynamoDBAPI, attributeDefinitions []*dynamodb.AttributeDefinition, keySchema []*dynamodb.KeySchemaElement, tableName *string) error {
-
 	_, err := svc.CreateTable(&dynamodb.CreateTableInput{
 		AttributeDefinitions: attributeDefinitions,
 		KeySchema:            keySchema,
