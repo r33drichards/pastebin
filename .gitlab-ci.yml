@@ -16,6 +16,7 @@ test:
 deploy-railway:
   stage: deploy
   image: ubuntu
+  needs: []
   only:
     - master
   script:
