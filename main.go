@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	_ "embed"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 
 	"net/http"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -28,6 +30,11 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/aws/aws-sdk-go/aws/session"
+
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
+	"github.com/microcosm-cc/bluemonday"
 )
 
 var (
@@ -39,8 +46,11 @@ var (
 	DIFF_TEMPLATE_TEXT string
 	//go:embed templates/diff-share.html
 	DIFF_SHARED_TEMPLATE_TEXT string
-	PBIN_TABLE_NAME           = os.Getenv("PBIN_TABLE_NAME")
-	PBIN_URL                  = os.Getenv("PBIN_URL")
+	// embed readme
+	//go:embed README.md
+	README_TEXT     string
+	PBIN_TABLE_NAME = os.Getenv("PBIN_TABLE_NAME")
+	PBIN_URL        = os.Getenv("PBIN_URL")
 )
 
 type Paste struct {
@@ -336,6 +346,7 @@ func init() {
 	}
 
 }
+
 func handlePaste(writer http.ResponseWriter, request *http.Request) {
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
@@ -387,6 +398,75 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 	default:
 		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
 
+	}
+}
+
+func mdToHTML(md []byte) ([]byte, error) {
+	// create markdown parser with extensions
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(md)
+
+	// create HTML renderer with extensions
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	maybeUnsafeHTML := markdown.Render(doc, renderer)
+	html := bluemonday.UGCPolicy().SanitizeBytes(maybeUnsafeHTML)
+	// add water.css
+	// <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+	// to html
+	d, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
+	if err != nil {
+		return nil, err
+	}
+	d.Find("head").AppendHtml(`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">`)
+	h, err := d.Html()
+	if err != nil {
+		return nil, err
+	}
+	return []byte(h), nil
+}
+
+func handleHtml(writer http.ResponseWriter, request *http.Request) {
+	sess := session.Must(session.NewSession())
+	svc := dynamodb.New(sess)
+	switch request.Method {
+	case "GET":
+		var paste *Paste
+		var err error
+		switch os.Getenv("DEBUG") {
+		case "true", "1", "TRUE", "True":
+			paste = &Paste{
+				PK:       "debug",
+				SK:       "debug",
+				Language: "markdown",
+				Text:     README_TEXT,
+			}
+		default:
+			id := request.URL.Query().Get("id")
+			paste, err = GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
+			if err != nil {
+				log.Println(err)
+				writer.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+		text := paste.Text
+		textBuffer := []byte(text)
+		html, err := mdToHTML(textBuffer)
+		if err != nil {
+			log.Println(err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		_, err = writer.Write(html)
+		if err != nil {
+			log.Println(err)
+		}
+	default:
+		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
 	}
 }
 
@@ -565,6 +645,8 @@ func main() {
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
+	// html
+	handleWithDefaultRateLimiter("/html", handleHtml)
 	handleWithDefaultRateLimiter("/", handleIndex)
 	// get port from env PORT
 	port := os.Getenv("PORT")
