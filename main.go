@@ -61,7 +61,7 @@ type Paste struct {
 }
 
 type PasteTemplateContent struct {
-	Text, Language string
+	Text, Language, ID string
 }
 
 type DiffTemplateContent struct {
@@ -373,18 +373,23 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, request.URL.String(), http.StatusMovedPermanently)
 	case "GET":
 		id := request.URL.Query().Get("id")
-		paste, err := GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
+		if id == "" {
+			// redirect to index
+			http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
+			return
+		}
+		paste, err := getPaste(id)
 		if err != nil {
-			// TODO return 500 err
-			log.Println(err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		lang := paste.Language
 		text := paste.Text
 		ptc := PasteTemplateContent{
 			text,
 			lang,
+			id,
 		}
 		t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
 		err = t.ExecuteTemplate(writer, "paste", ptc)
@@ -429,30 +434,43 @@ func mdToHTML(md []byte) ([]byte, error) {
 	return []byte(h), nil
 }
 
-func handleHtml(writer http.ResponseWriter, request *http.Request) {
+func getPaste(id string) (*Paste, error) {
 	sess := session.Must(session.NewSession())
 	svc := dynamodb.New(sess)
+	var paste *Paste
+	var err error
+	switch os.Getenv("DEBUG") {
+	case "true", "1", "TRUE", "True":
+		paste = &Paste{
+			PK:       "id",
+			SK:       "sk",
+			Language: "markdown",
+			Text:     README_TEXT,
+		}
+	default:
+		paste, err = GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
+		if err != nil {
+			return nil, err
+		}
+	}
+	return paste, nil
+}
+
+func handleHtml(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "GET":
-		var paste *Paste
-		var err error
-		switch os.Getenv("DEBUG") {
-		case "true", "1", "TRUE", "True":
-			paste = &Paste{
-				PK:       "debug",
-				SK:       "debug",
-				Language: "markdown",
-				Text:     README_TEXT,
-			}
-		default:
-			id := request.URL.Query().Get("id")
-			paste, err = GetTableItemPK(svc, aws.String(PBIN_TABLE_NAME), aws.String(id))
-			if err != nil {
-				log.Println(err)
-				writer.WriteHeader(http.StatusInternalServerError)
-				return
-			}
+		id := request.URL.Query().Get("id")
+		if id == "" {
+			// redirect to index
+			http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
+			return
 		}
+		paste, err := getPaste(id)
+		if err != nil {
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		text := paste.Text
 		textBuffer := []byte(text)
 		html, err := mdToHTML(textBuffer)

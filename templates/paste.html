@@ -41,6 +41,22 @@
         <i class="far fa-share-square"></i>
         Share Link to Text
       </button>
+      <!-- if language is markdown, show view html link -->
+      {{ if eq .Language "markdown" }}
+      <a class="
+            py-2
+            px-4
+            font-semibold
+            rounded-lg
+            shadow-md
+            text-white
+            bg-green-500
+            hover:bg-grey-700
+          " href="/html?id={{ .ID }}">
+        <i class="far fa-eye"></i>
+        View HTML
+      </a>
+      {{ end }}
     </div>
     <div id="monacoContainer" class="w-full h-4/5"></div>
   </div>
