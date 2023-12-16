@@ -35,6 +35,8 @@ import (
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/microcosm-cc/bluemonday"
+
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -406,6 +408,11 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 	}
 }
 
+type fm struct {
+	// title omitempty
+	Title *string `yaml:"title,omitempty"`
+}
+
 // parseYamlFrontMatter
 // check for
 // ---
@@ -417,9 +424,9 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 // map[string]string is the yaml front matter
 // []byte is the markdown without the yaml front matter
 // error is any error that occured
-func parseYamlFrontMatter(md []byte) (map[string]string, []byte, error) {
+func parseYamlFrontMatter(md []byte) (*fm, []byte, error) {
 	buf := bytes.NewBuffer(md)
-	frontMatter := make(map[string]string)
+	frontMatter := &fm{}
 	var err error
 	line, err := buf.ReadString('\n')
 	if err != nil {
@@ -429,6 +436,7 @@ func parseYamlFrontMatter(md []byte) (map[string]string, []byte, error) {
 		return nil, md, nil
 	}
 
+	lines := []string{}
 	for {
 		line, err := buf.ReadString('\n')
 		if err != nil {
@@ -437,12 +445,14 @@ func parseYamlFrontMatter(md []byte) (map[string]string, []byte, error) {
 		if strings.HasPrefix(line, "---") {
 			break
 		}
-		kv := strings.Split(line, ":")
-		if len(kv) != 2 {
-			return nil, nil, errors.New("invalid yaml front matter")
-		}
-		frontMatter[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
+		lines = append(lines, line)
 	}
+	y := strings.Join(lines, "")
+	err = yaml.Unmarshal([]byte(y), &frontMatter)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	mdWithoutFrontMatter := buf.Bytes()
 	return frontMatter, mdWithoutFrontMatter, nil
 }
@@ -483,8 +493,8 @@ func mdToHTML(md []byte) ([]byte, error) {
 		return nil, err
 	}
 	// add title if it exists
-	if title, ok := fm["title"]; ok {
-		d.Find("head").AppendHtml(fmt.Sprintf(`<title>%s</title>`, title))
+	if fm != nil && fm.Title != nil {
+		d.Find("head").AppendHtml(fmt.Sprintf(`<title>%s</title>`, *fm.Title))
 		h, err = d.Html()
 		if err != nil {
 			return nil, err

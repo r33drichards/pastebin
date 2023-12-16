@@ -1,5 +1,5 @@
 ---
-title: pbin
+title: "Enhancing Reliability in Error Handling: Comparing Go’s ‘if err != nil’ with Rust’s ‘Option’ and ‘Result’ Types"
 ---
 
 # pbin
