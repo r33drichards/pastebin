@@ -75,15 +75,3 @@ deploy-ecr:
   only:
     - master
     
-
-
-deploy-railway:
-  stage: deploy
-  image: ubuntu
-  needs: [deploy-ecr]
-  only:
-    - master
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -fsSL https://railway.app/install.sh | sh
-    - railway up --service=$RAILWAY_SERVICE_NAME -d

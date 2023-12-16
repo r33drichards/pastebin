@@ -1,3 +1,7 @@
+---
+title: pbin
+---
+
 # pbin
 
 - https://gitlab.com/reedrichards/pbin
