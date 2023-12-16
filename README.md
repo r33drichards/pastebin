@@ -6,7 +6,7 @@ title: pbin
 
 - https://gitlab.com/reedrichards/pbin
 
-try it out at [pbin.jjk.is](https://pbin.jjk.is)
+try it out at [p.jjk.is](https://p.jjk.is)
 
 ## Quickstart
 
