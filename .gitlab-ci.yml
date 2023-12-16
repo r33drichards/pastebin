@@ -1,6 +1,32 @@
 stages:
+  - build
   - test
   - deploy
+
+variables:
+  # When using dind service we need to instruct docker, to talk with the
+  # daemon started inside of the service. The daemon is available with
+  # a network connection instead of the default /var/run/docker.sock socket.
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/docker/using_docker_images.html#accessing-the-services
+  #
+  # Note that if you're using the Kubernetes executor, the variable should be set to
+  # tcp://localhost:2375 because of how the Kubernetes executor connects services
+  # to the job container
+  # DOCKER_HOST: tcp://localhost:2375
+  #
+  # For non-Kubernetes executors, we use tcp://docker:2375
+  # DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  # when using dind, it's wise to use the overlayfs driver for
+  # improved performance.
+  DOCKER_DRIVER: overlay2
+  #
+  # This will instruct Docker not to start over TLS.
+  IMAGE_NAME: wholelottahoopla/pbin
+  IMAGE_TAG: $IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+  LATEST_TAG: $IMAGE_NAME:latest
 
 
 test:
@@ -12,11 +38,46 @@ test:
     - go vet -composites=false $(go list ./... | grep -v /vendor/)
     - go test -race $(go list ./... | grep -v /vendor/)
 
+build:
+  needs: []
+  stage: build
+  image: nixos/nix
+  script:
+    - nix build --extra-experimental-features flakes --extra-experimental-features nix-command .#dockerImage
+    - cp $(readlink result) result.tar.gz
+  artifacts:
+    paths:
+      - result.tar.gz
+    expire_in: 1 week
+  cache:
+    paths:
+      - /nix
+
+deploy-ecr:
+  needs: [build]
+  dependencies:
+    - build
+  stage: build
+  image: docker:19.03.12
+  script:
+    - docker load < result.tar.gz
+    - docker tag pbin:latest $IMAGE_TAG
+    # login to docker with access key
+    - echo $DOCKER_PASSWORD | docker login -u wholelottahoopla --password-stdin
+    - docker push $IMAGE_TAG
+    - docker tag $IMAGE_TAG $LATEST_TAG
+    - docker push $LATEST_TAG
+    - echo $CI_COMMIT_SHORT_SHA
+    - echo $IMAGE_TAG
+  only:
+    - master
+    
+
 
 deploy-railway:
   stage: deploy
   image: ubuntu
-  needs: []
+  needs: [deploy-ecr]
   only:
     - master
   script:
