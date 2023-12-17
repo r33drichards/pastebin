@@ -547,7 +547,7 @@ func handleHtml(writer http.ResponseWriter, request *http.Request) {
 		textBuffer := []byte(text)
 		html, err := mdToHTML(textBuffer)
 		if err != nil {
-			log.Printf("error converting markdown to html: %v", err)
+			log.Printf("error converting markdown to html, stacktrace: %+v", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
