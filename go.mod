@@ -11,6 +11,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/sashabaranov/go-openai v1.14.0
 	go.uber.org/zap v1.24.0
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect

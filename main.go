@@ -5,7 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -37,6 +36,8 @@ import (
 	"github.com/microcosm-cc/bluemonday"
 
 	"gopkg.in/yaml.v2"
+
+	"github.com/pkg/errors"
 )
 
 var (
@@ -465,7 +466,7 @@ func mdToHTML(md []byte) ([]byte, error) {
 	// in markdown
 	fm, md, err := parseYamlFrontMatter(md)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	// create markdown parser with extensions
@@ -485,7 +486,7 @@ func mdToHTML(md []byte) ([]byte, error) {
 	// to html
 	d, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	d.Find("head").AppendHtml(`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">`)
 	h, err := d.Html()
@@ -497,7 +498,7 @@ func mdToHTML(md []byte) ([]byte, error) {
 		d.Find("head").AppendHtml(fmt.Sprintf(`<title>%s</title>`, *fm.Title))
 		h, err = d.Html()
 		if err != nil {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 	}
 

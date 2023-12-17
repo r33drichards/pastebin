@@ -27,6 +27,7 @@ pkgs.mkShell {
     pkgs.nixfmt
     pkgs.golangci-lint
     pkgs.go-tools
+    pkgs.gotools
     pkgs.gopls
     pkgs.go-outline
     pkgs.gocode
