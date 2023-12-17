@@ -431,7 +431,10 @@ func parseYamlFrontMatter(md []byte) (*fm, []byte, error) {
 	var err error
 	line, err := buf.ReadString('\n')
 	if err != nil {
-		return nil, nil, errors.WithStack(err)
+		return nil, nil, errors.Wrap(
+			err,
+			fmt.Sprintf("error reading line: %s", line),
+		)
 	}
 	if !strings.HasPrefix(line, "---") {
 		return nil, md, nil
@@ -441,7 +444,11 @@ func parseYamlFrontMatter(md []byte) (*fm, []byte, error) {
 	for {
 		line, err := buf.ReadString('\n')
 		if err != nil {
-			return nil, nil, errors.WithStack(err)
+			return nil, nil,
+				errors.Wrap(
+					err,
+					fmt.Sprintf("error reading line: %s", line),
+				)
 		}
 		if strings.HasPrefix(line, "---") {
 			break
