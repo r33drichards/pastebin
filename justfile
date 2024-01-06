@@ -1,3 +1,6 @@
+env:
+    touch .env
+
 tidy:
     go mod tidy
     gomod2nix 
@@ -6,7 +9,7 @@ build: tidy
     nix build .#dockerImage
     docker load -i ./result
 
-run: build
+run: build env
     docker run --env-file .env -p 8000:8000 pbin:latest
 
 lint:
