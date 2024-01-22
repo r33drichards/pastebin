@@ -12,7 +12,7 @@
 }:
 
 pkgs.buildGoApplication {
-  pname = "myapp";
+  pname = "pbin";
   version = "0.1";
   pwd = ./.;
   src = ./.;
