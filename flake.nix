@@ -26,6 +26,7 @@
 
         in
         {
+          app = app;
           packages.default = app;
           packages.dockerImage = dockerImage;
           devShells.default = import ./shell.nix { inherit pkgs; };
