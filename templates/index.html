@@ -1,110 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>PBIN pastebin with Monaco Editor</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      data-name="vs/editor/editor.main"
-      href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css"
-    />
-  </head>
-  <body>
-    <div class="container-xl h-screen overflow-y-hidden">
-      <div class="max-h-1/5 p-4">
-        <a class="py-2 px-4 font-bold text-black" href="/"> PBIN </a>
+
+<head>
+  <title>PBIN pastebin with Monaco Editor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" data-name="vs/editor/editor.main"
+    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs/editor/editor.main.min.css" />
+</head>
+
+<body>
+  <div class="container-xl h-screen overflow-y-hidden">
+    <div class="max-h-1/5 p-4">
+      <a class="py-2 px-4 font-bold text-black" href="/"> PBIN </a>
       <a class="py-2 px-4 font-bold text-black" href="/diff"> DIFF </a>
-        <label class="font-medium text-gray-700" for="language"
-          >Select a language:
-        </label>
-        <select
-          class="py-2 px-4 rounded-lg shadow-md"
-          name="lang"
-          id="language"
-        >
-          <option value="detect">detect</option>
-          <option value="">text</option>
-          <option value="abap">abap</option>
-          <option value="apex">apex</option>
-          <option value="azcli">azcli</option>
-          <option value="bat">bat</option>
-          <option value="bicep">bicep</option>
-          <option value="cameligo">cameligo</option>
-          <option value="clojure">clojure</option>
-          <option value="coffee">coffee</option>
-          <option value="cpp">cpp</option>
-          <option value="csharp">csharp</option>
-          <option value="csp">csp</option>
-          <option value="css">css</option>
-          <option value="dart">dart</option>
-          <option value="dockerfile">dockerfile</option>
-          <option value="ecl">ecl</option>
-          <option value="elixir">elixir</option>
-          <option value="fsharp">fsharp</option>
-          <option value="go">go</option>
-          <option value="graphql">graphql</option>
-          <option value="handlebars">handlebars</option>
-          <option value="hcl">hcl</option>
-          <option value="html">html</option>
-          <option value="ini">ini</option>
-          <option value="java">java</option>
-          <option value="javascript">javascript</option>
-          <option value="julia">julia</option>
-          <option value="kotlin">kotlin</option>
-          <option value="less">less</option>
-          <option value="lexon">lexon</option>
-          <option value="liquid">liquid</option>
-          <option value="lua">lua</option>
-          <option value="m3">m3</option>
-          <option value="markdown">markdown</option>
-          <option value="mips">mips</option>
-          <option value="msdax">msdax</option>
-          <option value="mysql">mysql</option>
-          <option value="objective-c">objective-c</option>
-          <option value="pascal">pascal</option>
-          <option value="pascaligo">pascaligo</option>
-          <option value="perl">perl</option>
-          <option value="pgsql">pgsql</option>
-          <option value="php">php</option>
-          <option value="postiats">postiats</option>
-          <option value="powerquery">powerquery</option>
-          <option value="powershell">powershell</option>
-          <option value="pug">pug</option>
-          <option value="python">python</option>
-          <option value="qsharp">qsharp</option>
-          <option value="r">r</option>
-          <option value="razor">razor</option>
-          <option value="redis">redis</option>
-          <option value="redshift">redshift</option>
-          <option value="restructuredtext">restructuredtext</option>
-          <option value="ruby">ruby</option>
-          <option value="rust">rust</option>
-          <option value="sb">sb</option>
-          <option value="scala">scala</option>
-          <option value="scheme">scheme</option>
-          <option value="scss">scss</option>
-          <option value="shell">shell</option>
-          <option value="solidity">solidity</option>
-          <option value="sophia">sophia</option>
-          <option value="sparql">sparql</option>
-          <option value="sql">sql</option>
-          <option value="st">st</option>
-          <option value="swift">swift</option>
-          <option value="systemverilog">systemverilog</option>
-          <option value="tcl">tcl</option>
-          <option value="twig">twig</option>
-          <option value="typescript">typescript</option>
-          <option value="vb">vb</option>
-          <option value="xml">xml</option>
-          <option value="yaml">yaml</option>
-        </select>
-        <button
-          class="
+      <label class="font-medium text-gray-700" for="language">Select a language:
+      </label>
+      <select class="py-2 px-4 rounded-lg shadow-md" name="lang" id="language">
+        <option value="detect">detect</option>
+        <option value="">text</option>
+        <option value="abap">abap</option>
+        <option value="apex">apex</option>
+        <option value="azcli">azcli</option>
+        <option value="bat">bat</option>
+        <option value="bicep">bicep</option>
+        <option value="cameligo">cameligo</option>
+        <option value="clojure">clojure</option>
+        <option value="coffee">coffee</option>
+        <option value="cpp">cpp</option>
+        <option value="csharp">csharp</option>
+        <option value="csp">csp</option>
+        <option value="css">css</option>
+        <option value="dart">dart</option>
+        <option value="dockerfile">dockerfile</option>
+        <option value="ecl">ecl</option>
+        <option value="elixir">elixir</option>
+        <option value="fsharp">fsharp</option>
+        <option value="go">go</option>
+        <option value="graphql">graphql</option>
+        <option value="handlebars">handlebars</option>
+        <option value="hcl">hcl</option>
+        <option value="html">html</option>
+        <option value="ini">ini</option>
+        <option value="java">java</option>
+        <option value="javascript">javascript</option>
+        <option value="julia">julia</option>
+        <option value="kotlin">kotlin</option>
+        <option value="less">less</option>
+        <option value="lexon">lexon</option>
+        <option value="liquid">liquid</option>
+        <option value="lua">lua</option>
+        <option value="m3">m3</option>
+        <option value="markdown">markdown</option>
+        <option value="mips">mips</option>
+        <option value="msdax">msdax</option>
+        <option value="mysql">mysql</option>
+        <option value="objective-c">objective-c</option>
+        <option value="pascal">pascal</option>
+        <option value="pascaligo">pascaligo</option>
+        <option value="perl">perl</option>
+        <option value="pgsql">pgsql</option>
+        <option value="php">php</option>
+        <option value="postiats">postiats</option>
+        <option value="powerquery">powerquery</option>
+        <option value="powershell">powershell</option>
+        <option value="pug">pug</option>
+        <option value="python">python</option>
+        <option value="qsharp">qsharp</option>
+        <option value="r">r</option>
+        <option value="razor">razor</option>
+        <option value="redis">redis</option>
+        <option value="redshift">redshift</option>
+        <option value="restructuredtext">restructuredtext</option>
+        <option value="ruby">ruby</option>
+        <option value="rust">rust</option>
+        <option value="sb">sb</option>
+        <option value="scala">scala</option>
+        <option value="scheme">scheme</option>
+        <option value="scss">scss</option>
+        <option value="shell">shell</option>
+        <option value="solidity">solidity</option>
+        <option value="sophia">sophia</option>
+        <option value="sparql">sparql</option>
+        <option value="sql">sql</option>
+        <option value="st">st</option>
+        <option value="swift">swift</option>
+        <option value="systemverilog">systemverilog</option>
+        <option value="tcl">tcl</option>
+        <option value="twig">twig</option>
+        <option value="typescript">typescript</option>
+        <option value="vb">vb</option>
+        <option value="xml">xml</option>
+        <option value="yaml">yaml</option>
+      </select>
+      <button class="
             py-2
             px-4
             font-semibold
@@ -113,221 +103,235 @@
             text-white
             bg-green-500
             hover:bg-green-700
-          "
-          onclick="window.paste()"
-        >
-          <i class="fas fa-paste"></i>
-          Paste
-        </button>
-      </div>
-      <div id="monacoContainer" class="w-full h-4/5"></div>
+          " onclick="window.paste()">
+        <i class="fas fa-paste"></i>
+        Paste
+      </button>
     </div>
+    <div id="monacoContainer" class="w-full h-4/5"></div>
+  </div>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
-    <script>
+  <script type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+  <script>
 
-      function convertGuessLangToMonacoLang(lang) {
-        // https://github.com/yoeo/guesslang/blob/92cd9f9b3ea7379553a76044512c678107af2061/guesslang/data/languages.json
-        return {
-          "asm": "asm",
-          "bat": "bat",
-          "c": "cpp",
-          "cpp": "cpp",
-          "clj": "clojure",
-          "cmake": "cmake",
-          "cbl": "cobol",
-          "coffee": "coffee",
-          "css": "css",
-          "csv": "csv",
-          "dart": "dart",
-          "dm": "dm",
-          "dockerfile": "dockerfile",
-          "ex": "elixir",
-          "erl": "erlang",
-          "f90": "fortran",
-          "go": "go",
-          "groovy": "groovy",
-          "hs": "haskell",
-          "html": "html",
-          "ini": "ini",
-          "java": "java",
-          "js": "javascript",
-          "json": "json",
-          "jl": "julia",
-          "kt": "kotlin",
-          "lisp": "lisp",
-          "lua": "lua",
-          "makefile": "makefile",
-          "md": "markdown",
-          "matlab": "matlab",
-          "mm": "objective-c",
-          "ml": "ocaml",
-          "pas": "pascal",
-          "pm": "perl",
-          "php": "php",
-          "ps1": "powershell",
-          "prolog": "prolog",
-          "py": "python",
-          "r": "r",
-          "rb": "ruby",
-          "rs": "rust",
-          "scala": "scala",
-          "sh": "shell",
-          "sql": "sql",
-          "swift": "swift",
-          "tex": "tex",
-          "toml": "toml",
-          "ts": "typescript",
-          "v": "verilog",
-          "vba": "vb",
-          "xml": "xml",
-          "yaml": "yaml"
-        }[lang]
-      }
-      async function detectLanguage(
-        code
-      ) {
-        const guesser = new GuessLang();
-        const result = await guesser.runModel(code);
-        console.log(result);
-        const lang =  result.reduce(
-          (a, b) => (a.confidence > b.confidence ? a : b), 
-          {languageId: "text", confidence: 0},
-        ).languageId
-        return convertGuessLangToMonacoLang(lang)
-      }
+    function convertGuessLangToMonacoLang(lang) {
+      // https://github.com/yoeo/guesslang/blob/92cd9f9b3ea7379553a76044512c678107af2061/guesslang/data/languages.json
+      return {
+        "asm": "asm",
+        "bat": "bat",
+        "c": "cpp",
+        "cpp": "cpp",
+        "clj": "clojure",
+        "cmake": "cmake",
+        "cbl": "cobol",
+        "coffee": "coffee",
+        "css": "css",
+        "csv": "csv",
+        "dart": "dart",
+        "dm": "dm",
+        "dockerfile": "dockerfile",
+        "ex": "elixir",
+        "erl": "erlang",
+        "f90": "fortran",
+        "go": "go",
+        "groovy": "groovy",
+        "hs": "haskell",
+        "html": "html",
+        "ini": "ini",
+        "java": "java",
+        "js": "javascript",
+        "json": "json",
+        "jl": "julia",
+        "kt": "kotlin",
+        "lisp": "lisp",
+        "lua": "lua",
+        "makefile": "makefile",
+        "md": "markdown",
+        "matlab": "matlab",
+        "mm": "objective-c",
+        "ml": "ocaml",
+        "pas": "pascal",
+        "pm": "perl",
+        "php": "php",
+        "ps1": "powershell",
+        "prolog": "prolog",
+        "py": "python",
+        "r": "r",
+        "rb": "ruby",
+        "rs": "rust",
+        "scala": "scala",
+        "sh": "shell",
+        "sql": "sql",
+        "swift": "swift",
+        "tex": "tex",
+        "toml": "toml",
+        "ts": "typescript",
+        "v": "verilog",
+        "vba": "vb",
+        "xml": "xml",
+        "yaml": "yaml"
+      }[lang]
+    }
+    async function detectLanguage(
+      code
+    ) {
+      const guesser = new GuessLang();
+      const result = await guesser.runModel(code);
+      console.log(result);
+      const lang = result.reduce(
+        (a, b) => (a.confidence > b.confidence ? a : b),
+        { languageId: "text", confidence: 0 },
+      ).languageId
+      return convertGuessLangToMonacoLang(lang)
+    }
 
-      // require is provided by loader.min.js.
-      require.config({
-        paths: {
-          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs",
-        },
-      });
-      require(["vs/editor/editor.main"], () => {
-        async function getCompletion(text) {
-          // post to /complete?text=text url encoded;
+    // require is provided by loader.min.js.
+    require.config({
+      paths: {
+        vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs",
+      },
+    });
+    require(["vs/editor/editor.main"], () => {
+      async function getCompletion(text) {
+        // post to /complete?text=text url encoded;
 
-          const response = await fetch("/complete?text=" + encodeURIComponent(text), {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-          const data = await response.json();
-          return data;
-        }
-
-        // define a monaco completion item provider
-        const completionProvider = {
-          provideCompletionItems: async function (model, position) {
-            let rangeUntilPosition = new monaco.Range(1, 1, position.lineNumber, position.column);
-
-            let textUntilPosition = model.getValueInRange(rangeUntilPosition);
-            data = await getCompletion(textUntilPosition);
-            return{
-              suggestions:  data.completions.map((completion) => {
-                return {
-                  insertText: completion,
-                  label: completion,
-                };
-              })
-          }
-        },
-        };
-
-        monacoLanguages = monaco.languages.getLanguages().map((lang) => {
-          monaco.languages.registerCompletionItemProvider(lang.id, completionProvider);
+        const response = await fetch("/complete?text=" + encodeURIComponent(text), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
+        const data = await response.json();
+        return data;
+      }
 
-        var m = monaco.editor.create(
-          document.getElementById("monacoContainer"),
-          {
-            value: "",
-            language: document.getElementById("language").value,
-            // if prefers dark vs-dark else vs-light
-            theme: window.matchMedia("(prefers-color-scheme: dark)").matches
-              ? "vs-dark"
-              : "vs-light",
-            automaticLayout: true,
-            wordWrap: "on",
-          }
-        );
-        // add a listener to monaco editor change event 
-        // to update the language of the editor when the 
-        // language is set to auto detect
+      // Define a monaco inline completion item provider
+      const inlineCompletionProvider = {
+        freeInlineCompletions: () => { },
+        provideInlineCompletions: async function (model, position, context, token) {
+          let rangeUntilPosition = new monaco.Range(1, 1, position.lineNumber, position.column);
+          let textUntilPosition = model.getValueInRange(rangeUntilPosition);
+          const data = await getCompletion(textUntilPosition);
 
-        m.onDidChangeModelContent(function (e) {
-          if (document.getElementById("language").value === "detect") {
-            detectLanguage(m.getValue()).then((language) => {
-              monaco.editor.setModelLanguage(
-                m.getModel(),
-                language
-              );
-              // document.getElementById("language").value = language;
-            });
-          }
-        });
-
-
-        document
-          .getElementById("language")
-          .addEventListener("change", function () {
-            var model = m.getModel(); // we'll create a model for you if the editor created from string value.
-            monaco.editor.setModelLanguage(
-              model,
-              document.getElementById("language").value
-            );
-          });
-        window.paste = function () {
-          const lang = document.getElementById("language").value;
-          if (lang === "detect") {
-            detectLanguage(m.getValue()).then((language) => {
-              const data = {
-                lang: language,
-                text: m.getValue(),
+          return {
+            items: data.completions.map((completion) => {
+              return {
+                text: completion,
+                range: new monaco.Range(
+                  position.lineNumber,
+                  position.column,
+                  position.lineNumber,
+                  position.column
+                ),
+                insertText: completion,
+                filterText: textUntilPosition,
               };
-              post("/paste", data);
-            });
-            return;
-          }
-          data = {
-            lang: lang,
-            text: m.getValue(),
+            }),
+            dispose: () => { },
           };
-          post("/paste", data);
-        };
+        },
+      };
+      // Register the inline completion provider for all supported languages
+      // Register the inline completion provider for all supported languages
+      monaco.languages.getLanguages().forEach((lang) => {
+        monaco.languages.registerInlineCompletionsProvider(lang.id, inlineCompletionProvider);
       });
-      // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
-      /**
-       * sends a request to the specified url from a form. this will change the window location.
-       * @param {string} path the path to send the post request to
-       * @param {object} params the parameters to add to the url
-       * @param {string} [method=post] the method to use on the form
-       */
-      function post(path, params, method = "post") {
-        // The rest of this code assumes you are not using a library.
-        // It can be made less verbose if you use one.
-        const form = document.createElement("form");
-        form.method = method;
-        form.action = path;
 
-        for (const key in params) {
-          if (params.hasOwnProperty(key)) {
-            const hiddenField = document.createElement("input");
-            hiddenField.type = "hidden";
-            hiddenField.name = key;
-            hiddenField.value = params[key];
-
-            form.appendChild(hiddenField);
-          }
+      var m = monaco.editor.create(
+        document.getElementById("monacoContainer"),
+        {
+          value: "",
+          language: document.getElementById("language").value,
+          // if prefers dark vs-dark else vs-light
+          theme: window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "vs-dark"
+            : "vs-light",
+          automaticLayout: true,
+          wordWrap: "on",
+          inlineSuggest: {
+            enabled: true,
+            mode: "prefix",
+          },
         }
+      );
+      // add a listener to monaco editor change event 
+      // to update the language of the editor when the 
+      // language is set to auto detect
 
-        document.body.appendChild(form);
-        form.submit();
+      m.onDidChangeModelContent(function (e) {
+        if (document.getElementById("language").value === "detect") {
+          detectLanguage(m.getValue()).then((language) => {
+            monaco.editor.setModelLanguage(
+              m.getModel(),
+              language
+            );
+            // document.getElementById("language").value = language;
+          });
+        }
+      });
+
+
+      document
+        .getElementById("language")
+        .addEventListener("change", function () {
+          var model = m.getModel(); // we'll create a model for you if the editor created from string value.
+          monaco.editor.setModelLanguage(
+            model,
+            document.getElementById("language").value
+          );
+        });
+      window.paste = function () {
+        const lang = document.getElementById("language").value;
+        if (lang === "detect") {
+          detectLanguage(m.getValue()).then((language) => {
+            const data = {
+              lang: language,
+              text: m.getValue(),
+            };
+            post("/paste", data);
+          });
+          return;
+        }
+        data = {
+          lang: lang,
+          text: m.getValue(),
+        };
+        post("/paste", data);
+      };
+    });
+    // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
+    /**
+     * sends a request to the specified url from a form. this will change the window location.
+     * @param {string} path the path to send the post request to
+     * @param {object} params the parameters to add to the url
+     * @param {string} [method=post] the method to use on the form
+     */
+    function post(path, params, method = "post") {
+      // The rest of this code assumes you are not using a library.
+      // It can be made less verbose if you use one.
+      const form = document.createElement("form");
+      form.method = method;
+      form.action = path;
+
+      for (const key in params) {
+        if (params.hasOwnProperty(key)) {
+          const hiddenField = document.createElement("input");
+          hiddenField.type = "hidden";
+          hiddenField.name = key;
+          hiddenField.value = params[key];
+
+          form.appendChild(hiddenField);
+        }
       }
-    </script>
-    <!-- fontawesome -->
-    <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
-  </body>
+
+      document.body.appendChild(form);
+      form.submit();
+    }
+  </script>
+  <!-- fontawesome -->
+  <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
+</body>
+
 </html>
