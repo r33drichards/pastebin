@@ -107,14 +107,52 @@
         <i class="fas fa-paste"></i>
         Paste
       </button>
+      <button id="runButton" class="
+      py-2
+      px-4
+      font-semibold
+      rounded-lg
+      shadow-md
+      text-white
+      bg-blue-500
+      hover:bg-blue-700
+    " onclick="window.runCode()">
+  <i class="fas fa-play"></i>
+  Run
+</button>
     </div>
     <div id="monacoContainer" class="w-full h-4/5"></div>
+    <div id="outputContainer" class="w-full h-1/5 p-4 bg-gray-100 overflow-y-auto">
+      <pre id="output"></pre>
+    </div>
   </div>
+
+
+
+  <script src=""></script>
 
   <script type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
-  <script>
+  <script type="module">
+    import { getQuickJS } from "https://esm.sh/quickjs-emscripten@0.25.0"
+    async function runCode() {
+      const QuickJS = await getQuickJS()
+      const code = window.getValue()
+      console.log(code)
+      const out = QuickJS.evalCode(code)
+      console.log(out)
+      document.getElementById("output").innerHTML = out
+    }
+
+    // Expose runCode to the global scope
+    window.runCode = runCode;
+
+
+  </script>
+ 
+ 
+ <script>
 
     function convertGuessLangToMonacoLang(lang) {
       // https://github.com/yoeo/guesslang/blob/92cd9f9b3ea7379553a76044512c678107af2061/guesslang/data/languages.json
@@ -282,6 +320,9 @@
             document.getElementById("language").value
           );
         });
+        window.getValue = function () {
+        return m.getValue();
+      };
       window.paste = function () {
         const lang = document.getElementById("language").value;
         if (lang === "detect") {
