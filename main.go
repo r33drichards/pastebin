@@ -386,8 +386,8 @@ func (c completionResponse) ToJsonBytes() ([]byte, error) {
 
 func handleCompletion(sugar *zap.SugaredLogger) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		// openapikey := os.Getenv("OPENAPIKEY")
-		openapikey := "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"
+		openapikey := os.Getenv("OPENAPIKEY")
+		// openapikey := "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"
 		if openapikey == "" {
 			sugar.Error("OPENAPIKEY not set")
 			writer.WriteHeader(http.StatusInternalServerError)
