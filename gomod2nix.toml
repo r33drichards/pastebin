@@ -16,6 +16,9 @@ schema = 3
   [mod."github.com/benbjohnson/clock"]
     version = "v1.1.0"
     hash = "sha256-BT/n9ag/E26FwEybLeqT1eOGlk6HsDIAp8A7LUssBfc="
+  [mod."github.com/boltdb/bolt"]
+    version = "v1.3.1"
+    hash = "sha256-eSxMiPaicRFOVsgwU8XOWrgvprJfuPfA8CQ6GakB8nw="
   [mod."github.com/davecgh/go-spew"]
     version = "v1.1.1"
     hash = "sha256-nhzSUrE1fCkN0+RL04N4h8jWmRFPPPWbCuDc7Ss0akI="

@@ -8,6 +8,31 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs/editor/editor.main.min.css" />
+    <style>
+    .panel {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .panel-header {
+      background-color: #f1f1f1;
+      padding: 10px;
+      cursor: move;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+    }
+    .panel-content {
+      padding: 10px;
+      height: 80vh;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-auto-rows: minmax(300px, auto);
+      gap: 10px;
+      padding: 10px;
+    }
+    </style>
 </head>
 
 <body>
@@ -121,10 +146,24 @@
   Run
 </button>
     </div>
-    <div id="monacoContainer" class="w-full h-4/5"></div>
-    <div id="outputContainer" class="w-full h-1/5 p-4 bg-gray-100 overflow-y-auto">
-      <pre id="output"></pre>
+    <div class="flex-grow overflow-auto">
+      <div class="grid" id="panelContainer">
+        <div class="panel" id="editorPanel">
+          <div class="panel-header">Code Editor</div>
+          <div class="panel-content">
+            <div id="monacoContainer" class="w-full h-full"></div>
+          </div>
+        </div>
+        <div class="panel" id="outputPanel">
+          <div class="panel-header">Output</div>
+          <div class="panel-content">
+            <pre id="output" class="w-full h-full overflow-auto p-4 bg-gray-100"></pre>
+          </div>
+        </div>
+      </div>
     </div>
+
+
   </div>
 
 
@@ -147,7 +186,37 @@
 
     // Expose runCode to the global scope
     window.runCode = runCode;
+    // Add this function to make panels resizable and draggable
+    function initializePanels() {
+      const panels = document.querySelectorAll('.panel');
+      panels.forEach(panel => {
+        const header = panel.querySelector('.panel-header');
+        header.addEventListener('mousedown', function(e) {
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startLeft = panel.offsetLeft;
+          const startTop = panel.offsetTop;
 
+          function onMouseMove(e) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            panel.style.left = startLeft + dx + 'px';
+            panel.style.top = startTop + dy + 'px';
+          }
+
+          function onMouseUp() {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+          }
+
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+        });
+      });
+    }
+
+    // Call initializePanels after the DOM is loaded
+    document.addEventListener('DOMContentLoaded', initializePanels);
 
   </script>
  
