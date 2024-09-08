@@ -169,24 +169,9 @@
 
   </div>
 
-  <ninja-keys placeholder="My custom placeholder" style="--ninja-z-index: 10;">
+  <ninja-keys placeholder="" style="--ninja-z-index: 10;">
   </ninja-keys>
 
-  <script type="module" src="https://esm.sh/ninja-keys@latest"></script>
-  <script>
-    const hotkeys = [
-      {
-        id: "run code",
-        title: "run code",
-        handler: () => {
-          window.runCode();
-        }
-
-      }
-    ];
-    const ninja = document.querySelector("ninja-keys");
-    ninja.data = hotkeys;
-  </script>
   <script type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
@@ -236,7 +221,6 @@
     document.addEventListener('DOMContentLoaded', initializePanels);
 
   </script>
-
 
   <script>
 
@@ -321,6 +305,7 @@
       async function getCompletion(text) {
         // post to /complete?text=text url encoded;
 
+
         const response = await fetch("/complete?text=" + encodeURIComponent(text), {
           method: "POST",
           headers: {
@@ -380,6 +365,11 @@
           },
         }
       );
+      m.focus();
+
+      window.addEventListener('focus', function () {
+        m.focus();
+      });
       // add a listener to monaco editor change event 
       // to update the language of the editor when the 
       // language is set to auto detect
@@ -469,6 +459,29 @@
   </script>
   <!-- fontawesome -->
   <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
+  <script type="module" src="https://esm.sh/ninja-keys@latest"></script>
+  <script>
+    const hotkeys = [
+      {
+        id: "run code",
+        title: "run code",
+        handler: () => {
+          window.runCode();
+        }
+
+      },
+	  {
+		id: "paste",
+		title: "paste",
+		handler: () => {
+		  window.paste();
+		}
+	  },
+		
+    ];
+    const ninja = document.querySelector("ninja-keys");
+    ninja.data = hotkeys;
+  </script>
 
 
 </body>
