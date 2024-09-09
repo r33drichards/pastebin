@@ -83,8 +83,8 @@ deploy-railway:
     - deploy-ecr
   stage: deploy
   image: nixery.dev/shell/curl
-  script:
-    - curl --request POST \
+  script: |
+    curl --request POST \
       --url https://backboard.railway.app/graphql/v2 \
       --header 'Authorization: Bearer $RAILWAY_API_KEY' \
         --header 'Content-Type: application/json' \
