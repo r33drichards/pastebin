@@ -75,3 +75,23 @@ deploy-ecr:
   only:
     - master
     
+
+
+deploy-railway:
+  needs: [deploy-ecr]
+  dependencies:
+    - deploy-ecr
+  stage: deploy
+  image: nixery.dev/shell/curl
+  script:
+    - curl --request POST \
+      --url https://backboard.railway.app/graphql/v2 \
+      --header 'Authorization: Bearer $RAILWAY_API_KEY' \
+        --header 'Content-Type: application/json' \
+        --data '{
+  "query": "mutation deploymentRedeploy($id: String!) {\n  deploymentRedeploy(id: $id) {\n    id\n  }\n}",
+  "variables": {
+    "id": "85e54ced-4e76-4cdc-808f-3e026fe0d123"
+  },
+  "operationName": "deploymentRedeploy"
+}'
