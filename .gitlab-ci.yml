@@ -76,6 +76,7 @@ deploy-ecr:
     - master
     
 deploy-railway:
+  retry: 2
   needs: [deploy-ecr]
   dependencies:
     - deploy-ecr
