@@ -19,7 +19,7 @@ import (
 // DataStore is the interface for our database operations
 type DataStore interface {
 	GetPaste(id string) (*Paste, error)
-	AddPaste(text, lang string) (string, error)
+	AddPaste(text, lang, title string) (string, error)
 	GetDiff(id string) (*Diff, error)
 	AddDiff(oldText, newText string) (string, error)
 	Close() error
@@ -31,6 +31,7 @@ type Paste struct {
 	SK       string
 	Language string
 	Text     string
+	Title    string
 }
 
 // Diff represents a diff item
@@ -208,13 +209,14 @@ func (b *BoltStore) GetPaste(id string) (*Paste, error) {
 }
 
 // AddPaste adds a new paste to BoltDB
-func (b *BoltStore) AddPaste(text, lang string) (string, error) {
+func (b *BoltStore) AddPaste(text, lang, title string) (string, error) {
 	id := uuid.New().String()
 	paste := Paste{
 		PK:       id,
 		SK:       time.Now().Format(time.RFC3339),
 		Language: lang,
 		Text:     text,
+		Title:    title,
 	}
 
 	err := b.db.Update(func(tx *bolt.Tx) error {
@@ -301,13 +303,14 @@ func (d *DynamoStore) GetPaste(id string) (*Paste, error) {
 }
 
 // AddPaste adds a new paste to DynamoDB
-func (d *DynamoStore) AddPaste(text, lang string) (string, error) {
+func (d *DynamoStore) AddPaste(text, lang, title string) (string, error) {
 	id := uuid.New().String()
 	paste := Paste{
 		PK:       id,
 		SK:       time.Now().Format(time.RFC3339),
 		Language: lang,
 		Text:     text,
+		Title:    title,
 	}
 
 	av, err := dynamodbattribute.MarshalMap(paste)

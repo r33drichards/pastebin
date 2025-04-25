@@ -29,6 +29,8 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/pkg/errors"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
@@ -49,7 +51,7 @@ var (
 )
 
 type PasteTemplateContent struct {
-	Text, Language, ID string
+	Text, Language, ID, Title string
 }
 
 type DiffTemplateContent struct {
@@ -64,6 +66,35 @@ func init() {
 	}
 }
 
+func generateTitle(text, openapikey string) (string, error) {
+	c := openai.NewClient(openapikey)
+	ctx := context.Background()
+
+	req := openai.ChatCompletionRequest{
+		Model: openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role: "system",
+				Content: `You are a helpful assistant that generates concise, descriptive titles for code snippets or text.
+Generate a short, descriptive title (max 10 words) that captures the main purpose or content of the text.
+Only output the title, nothing else.`,
+			},
+			{
+				Role:    "user",
+				Content: text,
+			},
+		},
+	}
+	resp, err := c.CreateChatCompletion(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("no completion generated")
+	}
+	return resp.Choices[0].Message.Content, nil
+}
+
 func handlePaste(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
 	case "POST":
@@ -73,7 +104,23 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		}
 		text := request.FormValue("text")
 		lang := request.FormValue("lang")
-		id, err := dataStore.AddPaste(text, lang)
+
+		// Generate title using OpenAI
+		openapikey := os.Getenv("OPENAPIKEY")
+		if openapikey == "" {
+			log.Printf("OPENAPIKEY not set")
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		title, err := generateTitle(text, openapikey)
+		if err != nil {
+			log.Printf("Failed to generate title: %v", err)
+			// Continue without title if generation fails
+			title = ""
+		}
+
+		id, err := dataStore.AddPaste(text, lang, title)
 
 		if err != nil {
 			log.Printf("Failed to add paste: %v", err)
@@ -103,6 +150,7 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 			Text:     paste.Text,
 			Language: paste.Language,
 			ID:       id,
+			Title:    paste.Title,
 		}
 		t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
 		err = t.ExecuteTemplate(writer, "paste", ptc)

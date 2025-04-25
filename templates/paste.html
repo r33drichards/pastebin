@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>PBIN pastebin with Monaco Editor</title>
+  <title>{{ if .Title }}{{ .Title }}{{ else }}PBIN pastebin with Monaco Editor{{ end }}</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
@@ -15,6 +15,9 @@
     <div class="max-h-1/5 p-4">
       <a class="py-2 px-4 font-bold text-black" href="/"> PBIN </a>
       <a class="py-2 px-4 font-bold text-black" href="/diff"> DIFF </a>
+      {{ if .Title }}
+      <span class="py-2 px-4 font-semibold text-gray-700">{{ .Title }}</span>
+      {{ end }}
       <button class="
           py-2
           px-4

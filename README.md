@@ -10,6 +10,14 @@ try it out at [p.jjk.is](https://p.jjk.is)
 
 ## Quickstart
 
+## build and run binary 
+```
+$ nix build
+$ ./result/bin/pbin
+{"level":"info","ts":1745557900.438304,"caller":"pbin/main.go:453","msg":"starting_server","port":"8000"}
+```
+
+
 ### build docker image 
 
 ```
@@ -185,4 +193,5 @@ git push -u origin main
 | `AWS_REGION`            |             | yes      | us-east-1                |
 | `PBIN_TABLE_NAME`       |             | yes      | pbin_dev                 |
 | `PBIN_URL`              |             | yes      | https://pbin.jjk.is:8000 |
-
+| `OPENAPIKEY`            |             | no       |                          |
+ 
