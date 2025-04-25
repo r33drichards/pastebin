@@ -81,10 +81,12 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Trigger Railway deployment
+        env:
+          RAILWAY_API_KEY: ${{ secrets.RAILWAY_API_KEY }}
         run: |
           curl --request POST \
             --url https://backboard.railway.app/graphql/v2 \
-            --header "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
+            --header "Authorization: Bearer $RAILWAY_API_KEY" \
             --header 'Content-Type: application/json' \
             --data '{
               "query": "mutation deploymentRedeploy($id: String!) {\n  deploymentRedeploy(id: $id) {\n    id\n  }\n}",
