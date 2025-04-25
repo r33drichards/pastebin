@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: wholelottahoopla/pbin
+  IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.20.4'
+          
+      - name: Run tests
+        run: |
+          go fmt $(go list ./... | grep -v /vendor/)
+          go vet -composites=false $(go list ./... | grep -v /vendor/)
+          go test -race $(go list ./... | grep -v /vendor/)
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Build Docker image
+        run: |
+          nix build --extra-experimental-features flakes --extra-experimental-features nix-command .#dockerImage
+          cp $(readlink result) result.tar.gz
+          
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: result.tar.gz
+
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: wholelottahoopla
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      - name: Load and push Docker image
+        run: |
+          docker load < result.tar.gz
+          docker tag pbin:latest ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.IMAGE_NAME }}:latest
+          
