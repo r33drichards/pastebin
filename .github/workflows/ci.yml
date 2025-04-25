@@ -63,15 +63,16 @@ jobs:
           
           
       - name: Load and push Docker image
+        env:
+          DOCKER_USERNAME: wholelottahoopla
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           docker load < result.tar.gz
-          echo $DOCKER_PASSWORD | docker login -u wholelottahoopla --password-stdin
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker tag pbin:latest ${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.IMAGE_NAME }}:latest
-        env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   deploy-railway:
     needs: [deploy]
