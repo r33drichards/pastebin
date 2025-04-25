@@ -74,4 +74,23 @@ jobs:
           docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.IMAGE_NAME }}:latest
+
+  deploy-railway:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Trigger Railway deployment
+        run: |
+          curl --request POST \
+            --url https://backboard.railway.app/graphql/v2 \
+            --header "Authorization: Bearer ${{ secrets.RAILWAY_API_KEY }}" \
+            --header 'Content-Type: application/json' \
+            --data '{
+              "query": "mutation deploymentRedeploy($id: String!) {\n  deploymentRedeploy(id: $id) {\n    id\n  }\n}",
+              "variables": {
+                "id": "85e54ced-4e76-4cdc-808f-3e026fe0d123"
+              },
+              "operationName": "deploymentRedeploy"
+            }'
           
