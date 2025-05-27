@@ -108,8 +108,7 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		// Generate title using OpenAI
 		openapikey := os.Getenv("OPENAPIKEY")
 		if openapikey == "" {
-			log.Printf("OPENAPIKEY not set")
-			writer.WriteHeader(http.StatusInternalServerError)
+			log.Printf("cannot generate title, OPENAPIKEY not set")
 			return
 		}
 
