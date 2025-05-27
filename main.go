@@ -105,18 +105,14 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		text := request.FormValue("text")
 		lang := request.FormValue("lang")
 
-		// Generate title using OpenAI
+		title := ""
+		var err error
+		// try to generate title using OpenAI
+		// but leave it blank if it fails
 		openapikey := os.Getenv("OPENAPIKEY")
-		if openapikey == "" {
-			log.Printf("cannot generate title, OPENAPIKEY not set")
-			return
-		}
-
-		title, err := generateTitle(text, openapikey)
+		title, err = generateTitle(text, openapikey)
 		if err != nil {
 			log.Printf("Failed to generate title: %v", err)
-			// Continue without title if generation fails
-			title = ""
 		}
 
 		id, err := dataStore.AddPaste(text, lang, title)
@@ -498,4 +494,3 @@ func main() {
 	sugar.Infow("starting_server", "port", port)
 	sugar.Fatal(http.ListenAndServe(":"+port, nil))
 }
-
