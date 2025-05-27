@@ -500,8 +500,3 @@ func main() {
 	sugar.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func cleanup() {
-	if err := dataStore.Close(); err != nil {
-		log.Printf("Error closing data store: %v", err)
-	}
-}
