@@ -159,6 +159,10 @@
         <i class="fas fa-play"></i>
         Run
       </button>
+      <label class="ml-2 font-medium text-gray-700">
+        <input type="checkbox" id="autoRunCheckbox" class="mr-1 align-middle" />
+        Auto Run
+      </label>
     </div>
     <div class="flex-grow overflow-auto">
       <div class="grid" id="panelContainer">
@@ -406,6 +410,9 @@
             // document.getElementById("language").value = language;
           });
         }
+        if (window.autoRunEnabled) {
+          window.debouncedRunCode();
+        }
       });
 
       // add cmd enter to run code
@@ -469,6 +476,25 @@
         }
       }
       window.runCode = runCode;
+
+      // Debounce function to limit how often code runs
+      function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
+      window.autoRunEnabled = false;
+      window.debouncedRunCode = debounce(runCode, 500);
+      const autoRunCheckbox = document.getElementById("autoRunCheckbox");
+      if (autoRunCheckbox) {
+        autoRunCheckbox.addEventListener("change", function () {
+          window.autoRunEnabled = this.checked;
+          // Optionally hide the Run button when auto-run is enabled
+          document.getElementById("runButton").style.display = window.autoRunEnabled ? "none" : "";
+        });
+      }
     });
     // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
     /**
