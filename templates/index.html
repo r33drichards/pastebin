@@ -8,6 +8,16 @@
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet" />
   <link rel="stylesheet" data-name="vs/editor/editor.main"
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.51.0/min/vs/editor/editor.main.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      // startOnLoad: true,
+      theme: "base",
+      flowchart: {
+        curve: "basis",
+      },
+    });
+  </script>
   <style>
     .panel {
       border: 1px solid #ccc;
@@ -121,6 +131,7 @@
         <option value="vb">vb</option>
         <option value="xml">xml</option>
         <option value="yaml">yaml</option>
+        <option value="mermaid">mermaid</option>
       </select>
       <button class="
             py-2
@@ -148,6 +159,10 @@
         <i class="fas fa-play"></i>
         Run
       </button>
+      <label class="ml-2 font-medium text-gray-700">
+        <input type="checkbox" id="autoRunCheckbox" class="mr-1 align-middle" />
+        Auto Run
+      </label>
     </div>
     <div class="flex-grow overflow-auto">
       <div class="grid" id="panelContainer">
@@ -160,7 +175,13 @@
         <div class="panel" id="outputPanel">
           <div class="panel-header">Output</div>
           <div class="panel-content">
-            <pre id="output" class="w-full h-full overflow-auto p-4 bg-gray-100"></pre>
+            <div id="output" 
+            class="w-full h-full overflow-auto p-4 bg-gray-100"
+            >
+
+
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -175,19 +196,7 @@
   <script type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
-  <script type="module">
-    import { getQuickJS } from "https://esm.sh/quickjs-emscripten@0.25.0"
-    async function runCode() {
-      const QuickJS = await getQuickJS()
-      const code = window.getValue()
-      console.log(code)
-      const out = QuickJS.evalCode(code)
-      console.log(out)
-      document.getElementById("output").innerHTML = out
-    }
-
-    // Expose runCode to the global scope
-    window.runCode = runCode;
+  <script>
     // Add this function to make panels resizable and draggable
     function initializePanels() {
       const panels = document.querySelectorAll('.panel');
@@ -219,7 +228,6 @@
 
     // Call initializePanels after the DOM is loaded
     document.addEventListener('DOMContentLoaded', initializePanels);
-
   </script>
 
   <script>
@@ -279,7 +287,8 @@
         "v": "verilog",
         "vba": "vb",
         "xml": "xml",
-        "yaml": "yaml"
+        "yaml": "yaml",
+        "mermaid": "mermaid"
       }[lang]
     }
     async function detectLanguage(
@@ -302,6 +311,23 @@
       },
     });
     require(["vs/editor/editor.main"], () => {
+      // Register Mermaid as a custom language if not already present
+      if (!monaco.languages.getLanguages().some(lang => lang.id === "mermaid")) {
+        monaco.languages.register({ id: "mermaid" });
+        monaco.languages.setMonarchTokensProvider("mermaid", {
+          tokenizer: {
+            root: [
+              [/(graph|flowchart|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|journey|mindmap|timeline|gitGraph)/, "keyword"],
+              [/".*?"/, "string"],
+              [/\[.*?\]/, "string"],
+              [/\(.*?\)/, "string"],
+              [/\{.*?\}/, "string"],
+              [/\-\->|==\>|\-\-|==/, "operator"],
+              [/\w+/, "identifier"],
+            ]
+          }
+        });
+      }
       async function getCompletion(text) {
         // post to /complete?text=text url encoded;
 
@@ -384,6 +410,9 @@
             // document.getElementById("language").value = language;
           });
         }
+        if (window.autoRunEnabled) {
+          window.debouncedRunCode();
+        }
       });
 
       // add cmd enter to run code
@@ -427,6 +456,45 @@
         };
         post("/paste", data);
       };
+
+      async function runCode() {
+        const code = window.getValue();
+        const lang = document.getElementById("language").value;
+        if (lang === "mermaid") {
+          // Render Mermaid diagram using v10+ API
+          mermaid.render('theGraph', code)
+            .then(({svg}) => {
+              document.getElementById("output").innerHTML = svg;
+            })
+            .catch((err) => {
+              document.getElementById("output").innerText = "Mermaid render error: " + err;
+            });
+        } else {
+          const QuickJS = await getQuickJS();
+          const out = QuickJS.evalCode(code);
+          document.getElementById("output").innerHTML = out;
+        }
+      }
+      window.runCode = runCode;
+
+      // Debounce function to limit how often code runs
+      function debounce(func, wait) {
+        let timeout;
+        return function(...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
+      window.autoRunEnabled = false;
+      window.debouncedRunCode = debounce(runCode, 500);
+      const autoRunCheckbox = document.getElementById("autoRunCheckbox");
+      if (autoRunCheckbox) {
+        autoRunCheckbox.addEventListener("change", function () {
+          window.autoRunEnabled = this.checked;
+          // Optionally hide the Run button when auto-run is enabled
+          document.getElementById("runButton").style.display = window.autoRunEnabled ? "none" : "";
+        });
+      }
     });
     // https://stackoverflow.com/questions/133925/javascript-post-request-like-a-form-submit
     /**
@@ -482,7 +550,6 @@
     const ninja = document.querySelector("ninja-keys");
     ninja.data = hotkeys;
   </script>
-
 
 </body>
 

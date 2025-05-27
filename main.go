@@ -67,6 +67,9 @@ func init() {
 }
 
 func generateTitle(text, openapikey string) (string, error) {
+	if openapikey == "" {
+		return "", fmt.Errorf("OPENAPIKEY not set")
+	}
 	c := openai.NewClient(openapikey)
 	ctx := context.Background()
 
@@ -105,19 +108,14 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		text := request.FormValue("text")
 		lang := request.FormValue("lang")
 
-		// Generate title using OpenAI
+		title := ""
+		var err error
+		// try to generate title using OpenAI
+		// but leave it blank if it fails
 		openapikey := os.Getenv("OPENAPIKEY")
-		if openapikey == "" {
-			log.Printf("OPENAPIKEY not set")
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		title, err := generateTitle(text, openapikey)
+		title, err = generateTitle(text, openapikey)
 		if err != nil {
 			log.Printf("Failed to generate title: %v", err)
-			// Continue without title if generation fails
-			title = ""
 		}
 
 		id, err := dataStore.AddPaste(text, lang, title)
@@ -498,10 +496,4 @@ func main() {
 	}
 	sugar.Infow("starting_server", "port", port)
 	sugar.Fatal(http.ListenAndServe(":"+port, nil))
-}
-
-func cleanup() {
-	if err := dataStore.Close(); err != nil {
-		log.Printf("Error closing data store: %v", err)
-	}
 }
