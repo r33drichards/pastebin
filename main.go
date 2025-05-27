@@ -67,6 +67,9 @@ func init() {
 }
 
 func generateTitle(text, openapikey string) (string, error) {
+	if openapikey == "" {
+		return "", fmt.Errorf("OPENAPIKEY not set")
+	}
 	c := openai.NewClient(openapikey)
 	ctx := context.Background()
 
