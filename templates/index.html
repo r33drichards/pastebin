@@ -159,6 +159,19 @@
         <i class="fas fa-play"></i>
         Run
       </button>
+      <button id="toggleOutputButton" class="
+      py-2
+      px-4
+      font-semibold
+      rounded-lg
+      shadow-md
+      text-white
+      bg-gray-500
+      hover:bg-gray-700
+    " onclick="window.toggleOutput()">
+        <i class="fas fa-eye"></i>
+        Toggle Output
+      </button>
       <label class="ml-2 font-medium text-gray-700">
         <input type="checkbox" id="autoRunCheckbox" class="mr-1 align-middle" />
         Auto Run
@@ -477,6 +490,23 @@
       }
       window.runCode = runCode;
 
+      // Toggle output panel visibility
+      window.toggleOutput = function() {
+        const outputPanel = document.getElementById("outputPanel");
+        const toggleButton = document.getElementById("toggleOutputButton");
+        const icon = toggleButton.querySelector("i");
+        
+        if (outputPanel.style.display === "none") {
+          outputPanel.style.display = "block";
+          icon.className = "fas fa-eye-slash";
+          toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Output';
+        } else {
+          outputPanel.style.display = "none";
+          icon.className = "fas fa-eye";
+          toggleButton.innerHTML = '<i class="fas fa-eye"></i> Show Output';
+        }
+      };
+
       // Debounce function to limit how often code runs
       function debounce(func, wait) {
         let timeout;
@@ -545,6 +575,13 @@
 		  window.paste();
 		}
 	  },
+      {
+        id: "toggle output",
+        title: "toggle output",
+        handler: () => {
+          window.toggleOutput();
+        }
+      },
 		
     ];
     const ninja = document.querySelector("ninja-keys");
