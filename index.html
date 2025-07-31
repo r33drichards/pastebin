@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PBIN pastebin with Monaco Editor</title>
+    <script src="https://kit.fontawesome.com/4f1eaa64ca.js" crossorigin="anonymous"></script>
+    <script type="module" src="https://esm.sh/ninja-keys@latest"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/guesslang-js@latest/dist/lib/guesslang.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quickjs-emscripten@0.23.0/dist/index.global.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <ninja-keys placeholder="" style="--ninja-z-index: 10;"></ninja-keys>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

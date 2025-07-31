@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"context"
 	_ "embed"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
@@ -34,6 +36,9 @@ import (
 )
 
 var (
+	//go:embed all:static
+	staticFiles embed.FS
+	
 	//go:embed templates/index.html
 	INDEX_TEMPLATE_TEXT string
 	//go:embed templates/paste.html
@@ -134,32 +139,28 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 	case "GET":
 		id := request.URL.Query().Get("id")
 		if id == "" {
-			http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
+			// For React app, return empty response for API calls without ID
+			writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		paste, err := dataStore.GetPaste(id)
 		if err != nil {
 			log.Printf("Failed to get paste: %v", err)
-			writer.WriteHeader(http.StatusInternalServerError)
+			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		ptc := PasteTemplateContent{
-			Text:     paste.Text,
-			Language: paste.Language,
-			ID:       id,
-			Title:    paste.Title,
-		}
-		t := template.Must(template.New("paste").Parse(PASTE_TEMPLATE_TEXT))
-		err = t.ExecuteTemplate(writer, "paste", ptc)
-		if err != nil {
-			log.Printf("Failed to execute template: %v", err)
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		// Return JSON for API requests
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(map[string]interface{}{
+			"id":       id,
+			"text":     paste.Text,
+			"language": paste.Language,
+			"title":    paste.Title,
+		})
 
 	default:
-		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
+		writer.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
@@ -316,14 +317,36 @@ func handleHtml(writer http.ResponseWriter, request *http.Request) {
 }
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.Error(w, "404 not found.", http.StatusNotFound)
+	// Serve the React app for all routes except API endpoints
+	if strings.HasPrefix(r.URL.Path, "/paste") ||
+		strings.HasPrefix(r.URL.Path, "/diff") ||
+		strings.HasPrefix(r.URL.Path, "/html") ||
+		strings.HasPrefix(r.URL.Path, "/complete") ||
+		strings.HasPrefix(r.URL.Path, "/health") {
+		return // Let other handlers handle these
+	}
+	
+	// Try to serve static files first
+	staticFS, err := fs.Sub(staticFiles, "static")
+	if err == nil {
+		fileServer := http.FileServer(http.FS(staticFS))
+		
+		// Check if the requested file exists
+		if _, err := staticFS.Open(strings.TrimPrefix(r.URL.Path, "/")); err == nil {
+			fileServer.ServeHTTP(w, r)
+			return
+		}
+	}
+	
+	// For all other routes, serve the index.html (React app)
+	indexFile, err := staticFiles.ReadFile("static/index.html")
+	if err != nil {
+		http.Error(w, "Failed to load application", http.StatusInternalServerError)
 		return
 	}
-	_, err := w.Write([]byte(INDEX_TEMPLATE_TEXT))
-	if err != nil {
-		log.Println(err)
-	}
+	
+	w.Header().Set("Content-Type", "text/html")
+	w.Write(indexFile)
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -358,10 +381,8 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 	case "GET":
 		id := request.URL.Query().Get("id")
 		if id == "" {
-			_, err := writer.Write([]byte(DIFF_TEMPLATE_TEXT))
-			if err != nil {
-				log.Println(err)
-			}
+			// For React app, return empty response for API calls without ID
+			writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		diff, err := dataStore.GetDiff(id)
@@ -372,20 +393,16 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 			return
 		}
 
-		dtc := DiffTemplateContent{
-			OldText: diff.OldText,
-			NewText: diff.NewText,
-		}
-
-		t := template.Must(template.New("diff-share").Parse(DIFF_SHARED_TEMPLATE_TEXT))
-		err = t.ExecuteTemplate(writer, "diff-share", dtc)
-		if err != nil {
-			writer.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		// Return JSON for API requests
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(map[string]interface{}{
+			"id":      id,
+			"oldText": diff.OldText,
+			"newText": diff.NewText,
+		})
 
 	default:
-		http.Redirect(writer, request, PBIN_URL, http.StatusMovedPermanently)
+		writer.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
 
@@ -482,13 +499,17 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
+	
+	// API endpoints
 	handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
-	// html
 	handleWithDefaultRateLimiter("/html", handleHtml)
-	handleWithDefaultRateLimiter("/", handleIndex)
+	
+	// Serve static files and React app for all other routes
+	http.HandleFunc("/", handleIndex)
+	
 	// get port from env PORT
 	port := os.Getenv("PORT")
 	if port == "" {

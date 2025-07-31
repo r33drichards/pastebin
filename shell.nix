@@ -36,5 +36,7 @@ pkgs.mkShell {
     pkgs.golint
     pkgs.delve
     pkgs.nixpkgs-fmt
+    pkgs.nodejs_20
+    pkgs.nodePackages.pnpm
   ];
 }

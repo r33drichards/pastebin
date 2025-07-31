@@ -2,8 +2,40 @@
 pbin
 /gomod2nix-template
 result 
+result-*
 .direnv
 pbin.db
 *~*~* 
 
 .DS_Store
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+# pnpm-lock.yaml
+
+# Testing
+coverage/
+
+# Production
+static/
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
