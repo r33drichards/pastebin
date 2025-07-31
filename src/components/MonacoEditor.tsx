@@ -8,7 +8,6 @@ interface MonacoEditorProps {
   language: string
   readOnly?: boolean
   onRunCode?: () => void
-  onPaste?: () => void
 }
 
 function convertGuessLangToMonacoLang(lang: string): string {
@@ -77,7 +76,6 @@ export default function MonacoEditor({
   language,
   readOnly = false,
   onRunCode,
-  onPaste,
 }: MonacoEditorProps) {
   const editorRef = useRef<any>(null)
   const monacoRef = useRef<Monaco | null>(null)

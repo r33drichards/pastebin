@@ -3,7 +3,6 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import Header from '../components/Header'
 import MonacoEditor from '../components/MonacoEditor'
-import { pasteService } from '../services/api'
 
 export default function PastePage() {
   const [searchParams] = useSearchParams()

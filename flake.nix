@@ -30,6 +30,15 @@
             hash = "sha256-zorplUpGbr1s+sY9XIuOrk0+J+ahQd8tY1+jRVlIyBc=";
           };
 
+          buildPhase = ''
+            pnpm build
+          '';
+
+          installPhase = ''
+            mkdir -p $out
+            cp -r static/* $out/
+          '';
+
         });
 
         # Build the Go backend with embedded frontend

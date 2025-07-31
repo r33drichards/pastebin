@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import mermaid from 'mermaid'
@@ -17,7 +17,7 @@ mermaid.initialize({
 })
 
 function debounce<T extends (...args: any[]) => void>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout
+  let timeout: ReturnType<typeof setTimeout>
   return ((...args) => {
     clearTimeout(timeout)
     timeout = setTimeout(() => func(...args), wait)
@@ -31,7 +31,7 @@ export default function HomePage() {
   const [output, setOutput] = useState('')
   const [showOutput, setShowOutput] = useState(true)
   const [autoRun, setAutoRun] = useState(false)
-  const editorValueRef = useRef('')
+
 
   const createPasteMutation = useMutation({
     mutationFn: async () => {
@@ -221,7 +221,6 @@ export default function HomePage() {
                   onChange={setCode}
                   language={language}
                   onRunCode={runCode}
-                  onPaste={handlePaste}
                 />
               </div>
             </div>

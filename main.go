@@ -3,11 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
-	_ "embed"
 	"embed"
+	_ "embed"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"io/fs"
 	"log"
@@ -38,7 +37,7 @@ import (
 var (
 	//go:embed all:static
 	staticFiles embed.FS
-	
+
 	//go:embed templates/index.html
 	INDEX_TEMPLATE_TEXT string
 	//go:embed templates/paste.html
@@ -325,26 +324,26 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		strings.HasPrefix(r.URL.Path, "/health") {
 		return // Let other handlers handle these
 	}
-	
+
 	// Try to serve static files first
 	staticFS, err := fs.Sub(staticFiles, "static")
 	if err == nil {
 		fileServer := http.FileServer(http.FS(staticFS))
-		
+
 		// Check if the requested file exists
 		if _, err := staticFS.Open(strings.TrimPrefix(r.URL.Path, "/")); err == nil {
 			fileServer.ServeHTTP(w, r)
 			return
 		}
 	}
-	
+
 	// For all other routes, serve the index.html (React app)
 	indexFile, err := staticFiles.ReadFile("static/index.html")
 	if err != nil {
 		http.Error(w, "Failed to load application", http.StatusInternalServerError)
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "text/html")
 	w.Write(indexFile)
 }
@@ -499,17 +498,17 @@ func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync() // flushes buffer, if any
 	sugar := logger.Sugar()
-	
+
 	// API endpoints
 	handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
 	handleWithDefaultRateLimiter("/diff", handleDiff)
 	handleWithDefaultRateLimiter("/health", handleHealth)
 	handleWithDefaultRateLimiter("/paste", handlePaste)
 	handleWithDefaultRateLimiter("/html", handleHtml)
-	
+
 	// Serve static files and React app for all other routes
 	http.HandleFunc("/", handleIndex)
-	
+
 	// get port from env PORT
 	port := os.Getenv("PORT")
 	if port == "" {
