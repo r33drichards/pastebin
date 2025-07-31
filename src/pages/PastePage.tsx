@@ -1,69 +1,32 @@
-import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import Header from '../components/Header'
 import MonacoEditor from '../components/MonacoEditor'
 
+interface PasteData {
+  id: string
+  text: string
+  language: string
+  title: string
+}
+
 export default function PastePage() {
   const [searchParams] = useSearchParams()
   const id = searchParams.get('id')
-  const [pasteData, setPasteData] = useState<{ text: string; language: string; title?: string } | null>(null)
 
-  // Since the API returns HTML, we need to parse it
-  const { data: htmlContent } = useQuery({
+  // Use the JSON API directly
+  const { data: pasteData, isLoading, error } = useQuery({
     queryKey: ['paste', id],
-    queryFn: async () => {
+    queryFn: async (): Promise<PasteData> => {
       if (!id) throw new Error('No paste ID provided')
       const response = await fetch(`/paste?id=${id}`)
-      return response.text()
+      if (!response.ok) {
+        throw new Error(`Failed to fetch paste: ${response.status}`)
+      }
+      return response.json()
     },
     enabled: !!id,
   })
-
-  useEffect(() => {
-    if (htmlContent) {
-      // Parse the HTML to extract the paste data
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(htmlContent, 'text/html')
-      
-      // Extract text from the script that sets up monaco
-      const scripts = doc.querySelectorAll('script')
-      let text = ''
-      let language = ''
-      let title = ''
-      
-      scripts.forEach(script => {
-        const content = script.textContent || ''
-        if (content.includes('monaco.editor.create')) {
-          // Extract value
-          const valueMatch = content.match(/value:\s*(.+?),\s*language:/s)
-          if (valueMatch) {
-            try {
-              // The value is a Go template expression, we need to evaluate it carefully
-              text = JSON.parse(valueMatch[1])
-            } catch {
-              // If JSON parse fails, try to extract the raw string
-              text = valueMatch[1].replace(/^"|"$/g, '')
-            }
-          }
-          
-          // Extract language
-          const langMatch = content.match(/language:\s*"?(.+?)"?,/)
-          if (langMatch) {
-            language = langMatch[1].replace(/"/g, '')
-          }
-        }
-      })
-      
-      // Extract title
-      const titleElement = doc.querySelector('title')
-      if (titleElement && titleElement.textContent !== 'PBIN pastebin with Monaco Editor') {
-        title = titleElement.textContent || ''
-      }
-      
-      setPasteData({ text, language, title })
-    }
-  }, [htmlContent])
 
   const copyText = () => {
     if (pasteData?.text) {
@@ -86,11 +49,32 @@ export default function PastePage() {
     )
   }
 
-  if (!pasteData) {
+  if (isLoading) {
     return (
       <div className="container-xl h-screen overflow-y-hidden">
         <Header />
         <div className="p-4">Loading...</div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container-xl h-screen overflow-y-hidden">
+        <Header />
+        <div className="p-4">
+          <p>Error loading paste: {error.message}</p>
+          <Link to="/" className="text-blue-500">Go back to home</Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (!pasteData) {
+    return (
+      <div className="container-xl h-screen overflow-y-hidden">
+        <Header />
+        <div className="p-4">Paste not found.</div>
       </div>
     )
   }
@@ -102,12 +86,14 @@ export default function PastePage() {
           <span className="py-2 px-4 font-semibold text-gray-700">{pasteData.title}</span>
         )}
         <button
+          type="button"
           className="py-2 px-4 font-semibold rounded-lg shadow-md text-white bg-green-500 hover:bg-green-700 ml-2"
           onClick={copyText}
         >
           <i className="far fa-copy"></i> Copy Text
         </button>
         <button
+          type="button"
           className="py-2 px-4 font-semibold rounded-lg shadow-md text-white bg-green-500 hover:bg-grey-700 ml-2"
           onClick={shareLink}
         >

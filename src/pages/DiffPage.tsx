@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { DiffEditor } from '@monaco-editor/react'
 import Header from '../components/Header'
 import { diffService } from '../services/api'
+import { Diff } from '../types'
 
 export default function DiffPage() {
   const navigate = useNavigate()
@@ -14,40 +15,15 @@ export default function DiffPage() {
   const [modified, setModified] = useState('')
 
   // Fetch diff if ID is provided
-  const { data: diffData } = useQuery({
+  const { data: diffData, isLoading, error } = useQuery({
     queryKey: ['diff', id],
-    queryFn: async () => {
-      if (!id) return null
+    queryFn: async (): Promise<Diff> => {
+      if (!id) throw new Error('No diff ID provided')
       const response = await fetch(`/diff?id=${id}`)
-      const html = await response.text()
-      
-      // Parse the HTML to extract diff data
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, 'text/html')
-      
-      // Find the script that contains the diff data
-      const scripts = doc.querySelectorAll('script')
-      let oldText = ''
-      let newText = ''
-      
-      scripts.forEach(script => {
-        const content = script.textContent || ''
-        if (content.includes('oldText:') && content.includes('newText:')) {
-          // Extract oldText
-          const oldMatch = content.match(/oldText:\s*`([^`]*)`/)
-          if (oldMatch) {
-            oldText = oldMatch[1]
-          }
-          
-          // Extract newText
-          const newMatch = content.match(/newText:\s*`([^`]*)`/)
-          if (newMatch) {
-            newText = newMatch[1]
-          }
-        }
-      })
-      
-      return { oldText, newText }
+      if (!response.ok) {
+        throw new Error(`Failed to fetch diff: ${response.status}`)
+      }
+      return response.json()
     },
     enabled: !!id,
   })
@@ -98,10 +74,31 @@ export default function DiffPage() {
     )
   }
 
+  if (id && isLoading) {
+    return (
+      <div className="container-xl h-screen overflow-y-hidden">
+        <Header />
+        <div className="p-4">Loading...</div>
+      </div>
+    )
+  }
+
+  if (id && error) {
+    return (
+      <div className="container-xl h-screen overflow-y-hidden">
+        <Header />
+        <div className="p-4">
+          <p>Error loading diff: {error.message}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container-xl h-screen overflow-y-hidden flex flex-col">
       <Header>
         <button
+          type="button"
           className="py-2 px-4 font-semibold rounded-lg shadow-md text-white bg-green-500 hover:bg-green-700 ml-2"
           onClick={handleSubmit}
           disabled={createDiffMutation.isPending || (!original && !modified)}

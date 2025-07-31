@@ -36,7 +36,12 @@ pkgs.mkShell {
     pkgs.golint
     pkgs.delve
     pkgs.nixpkgs-fmt
-    pkgs.nodejs_20
+    pkgs.nodejs
     pkgs.nodePackages.pnpm
+    # Protobuf tools
+    pkgs.protobuf
+    pkgs.protoc-gen-go
+    pkgs.protoc-gen-go-grpc
+    pkgs.grpcurl
   ];
 }

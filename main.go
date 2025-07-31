@@ -34,6 +34,14 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
+// min returns the minimum of two integers
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 var (
 	//go:embed all:static
 	staticFiles embed.FS
@@ -63,11 +71,18 @@ type DiffTemplateContent struct {
 }
 
 func init() {
+	sugar := zap.L().Sugar()
+	sugar.Info("initializing_application")
+
 	var err error
+	sugar.Info("creating_data_store")
 	dataStore, err = NewDataStore()
 	if err != nil {
+		sugar.Fatalw("failed_to_initialize_data_store", "error", err)
 		log.Fatalf("Failed to initialize data store: %v", err)
 	}
+
+	sugar.Info("data_store_initialized_successfully")
 }
 
 func generateTitle(text, openapikey string) (string, error) {
@@ -103,14 +118,26 @@ Only output the title, nothing else.`,
 }
 
 func handlePaste(writer http.ResponseWriter, request *http.Request) {
+	sugar := zap.L().Sugar()
+
 	switch request.Method {
 	case "POST":
+		sugar.Infow("paste_write_request_started", "method", request.Method, "content_length", request.ContentLength)
+
 		if err := request.ParseForm(); err != nil {
+			sugar.Errorw("failed_to_parse_form", "error", err)
 			fmt.Fprintf(writer, "ParseForm() err: %v", err)
 			return
 		}
+
 		text := request.FormValue("text")
 		lang := request.FormValue("lang")
+
+		sugar.Infow("paste_data_received",
+			"text_length", len(text),
+			"language", lang,
+			"has_text", text != "",
+		)
 
 		title := ""
 		var err error
@@ -119,16 +146,38 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		openapikey := os.Getenv("OPENAPIKEY")
 		title, err = generateTitle(text, openapikey)
 		if err != nil {
-			log.Printf("Failed to generate title: %v", err)
+			sugar.Warnw("failed_to_generate_title", "error", err, "text_preview", text[:min(len(text), 100)])
+		} else {
+			sugar.Infow("title_generated", "title", title)
 		}
+
+		sugar.Infow("attempting_to_add_paste",
+			"text_length", len(text),
+			"language", lang,
+			"title", title,
+		)
 
 		id, err := dataStore.AddPaste(text, lang, title)
 
 		if err != nil {
+			sugar.Errorw("failed_to_add_paste",
+				"error", err,
+				"text_length", len(text),
+				"language", lang,
+				"title", title,
+			)
 			log.Printf("Failed to add paste: %v", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		sugar.Infow("paste_successfully_added",
+			"id", id,
+			"text_length", len(text),
+			"language", lang,
+			"title", title,
+		)
+
 		q := request.URL.Query()
 		q.Del("text")
 		q.Del("lang")
@@ -137,17 +186,30 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, request.URL.String(), http.StatusMovedPermanently)
 	case "GET":
 		id := request.URL.Query().Get("id")
+		sugar.Infow("paste_read_request", "id", id, "has_id", id != "")
+
 		if id == "" {
+			sugar.Warnw("paste_read_request_without_id")
 			// For React app, return empty response for API calls without ID
 			writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		sugar.Infow("attempting_to_get_paste", "id", id)
 		paste, err := dataStore.GetPaste(id)
 		if err != nil {
+			sugar.Errorw("failed_to_get_paste", "id", id, "error", err)
 			log.Printf("Failed to get paste: %v", err)
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		sugar.Infow("paste_successfully_retrieved",
+			"id", id,
+			"text_length", len(paste.Text),
+			"language", paste.Language,
+			"title", paste.Title,
+		)
 
 		// Return JSON for API requests
 		writer.Header().Set("Content-Type", "application/json")
@@ -159,6 +221,7 @@ func handlePaste(writer http.ResponseWriter, request *http.Request) {
 		})
 
 	default:
+		sugar.Warnw("unsupported_method", "method", request.Method)
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }
@@ -356,21 +419,52 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDiff(writer http.ResponseWriter, request *http.Request) {
+	sugar := zap.L().Sugar()
+
 	switch request.Method {
 	case "POST":
+		sugar.Infow("diff_write_request_started", "method", request.Method, "content_length", request.ContentLength)
+
 		if err := request.ParseForm(); err != nil {
+			sugar.Errorw("failed_to_parse_form", "error", err)
 			fmt.Fprintf(writer, "ParseForm() err: %v", err)
 			return
 		}
+
 		original := request.FormValue("original")
 		modified := request.FormValue("modified")
+
+		sugar.Infow("diff_data_received",
+			"original_length", len(original),
+			"modified_length", len(modified),
+			"has_original", original != "",
+			"has_modified", modified != "",
+		)
+
+		sugar.Infow("attempting_to_add_diff",
+			"original_length", len(original),
+			"modified_length", len(modified),
+		)
+
 		id, err := dataStore.AddDiff(original, modified)
 
 		if err != nil {
+			sugar.Errorw("failed_to_add_diff",
+				"error", err,
+				"original_length", len(original),
+				"modified_length", len(modified),
+			)
 			log.Printf("Failed to add diff: %v", err)
 			writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		sugar.Infow("diff_successfully_added",
+			"id", id,
+			"original_length", len(original),
+			"modified_length", len(modified),
+		)
+
 		q := request.URL.Query()
 		q.Del("original")
 		q.Del("modified")
@@ -379,18 +473,30 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		http.Redirect(writer, request, request.URL.String(), http.StatusMovedPermanently)
 	case "GET":
 		id := request.URL.Query().Get("id")
+		sugar.Infow("diff_read_request", "id", id, "has_id", id != "")
+
 		if id == "" {
+			sugar.Warnw("diff_read_request_without_id")
 			// For React app, return empty response for API calls without ID
 			writer.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
+		sugar.Infow("attempting_to_get_diff", "id", id)
 		diff, err := dataStore.GetDiff(id)
 
 		if err != nil {
+			sugar.Errorw("failed_to_get_diff", "id", id, "error", err)
 			log.Printf("Failed to get diff: %v", err)
 			writer.WriteHeader(http.StatusNotFound)
 			return
 		}
+
+		sugar.Infow("diff_successfully_retrieved",
+			"id", id,
+			"old_text_length", len(diff.OldText),
+			"new_text_length", len(diff.NewText),
+		)
 
 		// Return JSON for API requests
 		writer.Header().Set("Content-Type", "application/json")
@@ -401,6 +507,7 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 		})
 
 	default:
+		sugar.Warnw("unsupported_method", "method", request.Method)
 		writer.WriteHeader(http.StatusMethodNotAllowed)
 	}
 }

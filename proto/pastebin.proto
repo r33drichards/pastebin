@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package pastebin;
+
+option go_package = "github.com/pastebin/api;api";
+
+// Services
+service PastebinService {
+  // Paste operations
+  rpc CreatePaste(CreatePasteRequest) returns (CreatePasteResponse);
+  rpc GetPaste(GetPasteRequest) returns (GetPasteResponse);
+  
+  // Diff operations
+  rpc CreateDiff(CreateDiffRequest) returns (CreateDiffResponse);
+  rpc GetDiff(GetDiffRequest) returns (GetDiffResponse);
+  
+  // Completion operations
+  rpc GetCompletion(GetCompletionRequest) returns (GetCompletionResponse);
+}
+
+// Paste messages
+message CreatePasteRequest {
+  string text = 1;
+  string language = 2;
+}
+
+message CreatePasteResponse {
+  string id = 1;
+}
+
+message GetPasteRequest {
+  string id = 1;
+}
+
+message GetPasteResponse {
+  string id = 1;
+  string text = 2;
+  string language = 3;
+  string title = 4;
+}
+
+// Diff messages
+message CreateDiffRequest {
+  string original = 1;
+  string modified = 2;
+}
+
+message CreateDiffResponse {
+  string id = 1;
+}
+
+message GetDiffRequest {
+  string id = 1;
+}
+
+message GetDiffResponse {
+  string id = 1;
+  string old_text = 2;
+  string new_text = 3;
+}
+
+// Completion messages
+message GetCompletionRequest {
+  string text = 1;
+}
+
+message GetCompletionResponse {
+  repeated string completions = 1;
+}
