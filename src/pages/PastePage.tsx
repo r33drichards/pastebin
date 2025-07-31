@@ -19,7 +19,7 @@ export default function PastePage() {
     queryKey: ['paste', id],
     queryFn: async (): Promise<PasteData> => {
       if (!id) throw new Error('No paste ID provided')
-      const response = await fetch(`/paste?id=${id}`)
+      const response = await fetch(`/api/paste?id=${id}`)
       if (!response.ok) {
         throw new Error(`Failed to fetch paste: ${response.status}`)
       }

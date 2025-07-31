@@ -380,8 +380,7 @@ func handleHtml(writer http.ResponseWriter, request *http.Request) {
 
 func handleIndex(w http.ResponseWriter, r *http.Request) {
 	// Serve the React app for all routes except API endpoints
-	if strings.HasPrefix(r.URL.Path, "/paste") ||
-		strings.HasPrefix(r.URL.Path, "/diff") ||
+	if strings.HasPrefix(r.URL.Path, "/api/") ||
 		strings.HasPrefix(r.URL.Path, "/html") ||
 		strings.HasPrefix(r.URL.Path, "/complete") ||
 		strings.HasPrefix(r.URL.Path, "/health") {
@@ -607,10 +606,10 @@ func main() {
 	sugar := logger.Sugar()
 
 	// API endpoints
-	handleWithDefaultRateLimiter("/complete", handleCompletion(sugar))
-	handleWithDefaultRateLimiter("/diff", handleDiff)
+	handleWithDefaultRateLimiter("/api/complete", handleCompletion(sugar))
+	handleWithDefaultRateLimiter("/api/diff", handleDiff)
+	handleWithDefaultRateLimiter("/api/paste", handlePaste)
 	handleWithDefaultRateLimiter("/health", handleHealth)
-	handleWithDefaultRateLimiter("/paste", handlePaste)
 	handleWithDefaultRateLimiter("/html", handleHtml)
 
 	// Serve static files and React app for all other routes

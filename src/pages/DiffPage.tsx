@@ -19,7 +19,7 @@ export default function DiffPage() {
     queryKey: ['diff', id],
     queryFn: async (): Promise<Diff> => {
       if (!id) throw new Error('No diff ID provided')
-      const response = await fetch(`/diff?id=${id}`)
+      const response = await fetch(`/api/diff?id=${id}`)
       if (!response.ok) {
         throw new Error(`Failed to fetch diff: ${response.status}`)
       }

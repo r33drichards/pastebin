@@ -30,12 +30,12 @@ export const pasteService = {
   },
 
   get: async (id: string): Promise<Paste> => {
-    const response = await api.get(`/paste?id=${id}`)
+    const response = await api.get(`/api/paste?id=${id}`)
     return response.data
   },
 
   getCompletion: async (text: string): Promise<CompletionResponse> => {
-    const response = await api.post(`/complete?text=${encodeURIComponent(text)}`)
+    const response = await api.post(`/api/complete?text=${encodeURIComponent(text)}`)
     return response.data
   },
 }
@@ -61,7 +61,7 @@ export const diffService = {
   },
 
   get: async (id: string): Promise<Diff> => {
-    const response = await api.get(`/diff?id=${id}`)
+    const response = await api.get(`/api/diff?id=${id}`)
     return response.data
   },
 }
