@@ -1,27 +1,26 @@
-import axios from 'axios'
+import { DefaultService, OpenAPI } from '../generated'
 import { Paste, Diff, CompletionResponse } from '../types'
 
-const api = axios.create({
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  maxRedirects: 0,
-  validateStatus: (status) => status < 400,
-})
+// Configure the OpenAPI client
+OpenAPI.BASE = 'http://localhost:8000'
 
 export const pasteService = {
   create: async (text: string, lang: string): Promise<string> => {
+    // The response is a redirect, we need to extract the ID from the Location header
+    // For now, we'll use the old implementation until we fix the redirect handling
     const formData = new URLSearchParams()
     formData.append('text', text)
     formData.append('lang', lang)
     
-    const response = await api.post('/paste', formData, {
+    const fetchResponse = await fetch('/api/paste', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
+      body: formData,
     })
     
-    const redirectUrl = response.request.responseURL || response.headers.location
+    const redirectUrl = fetchResponse.headers.get('location') || fetchResponse.url
     const url = new URL(redirectUrl)
     const id = url.searchParams.get('id')
     
@@ -30,29 +29,31 @@ export const pasteService = {
   },
 
   get: async (id: string): Promise<Paste> => {
-    const response = await api.get(`/api/paste?id=${id}`)
-    return response.data
+    return DefaultService.getPaste(id)
   },
 
   getCompletion: async (text: string): Promise<CompletionResponse> => {
-    const response = await api.post(`/api/complete?text=${encodeURIComponent(text)}`)
-    return response.data
+    return DefaultService.getCompletion({ text })
   },
 }
 
 export const diffService = {
   create: async (original: string, modified: string): Promise<string> => {
+    // The response is a redirect, we need to extract the ID from the Location header
+    // For now, we'll use the old implementation until we fix the redirect handling
     const formData = new URLSearchParams()
     formData.append('original', original)
     formData.append('modified', modified)
     
-    const response = await api.post('/diff', formData, {
+    const fetchResponse = await fetch('/api/diff', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
+      body: formData,
     })
     
-    const redirectUrl = response.request.responseURL || response.headers.location
+    const redirectUrl = fetchResponse.headers.get('location') || fetchResponse.url
     const url = new URL(redirectUrl)
     const id = url.searchParams.get('id')
     
@@ -61,7 +62,6 @@ export const diffService = {
   },
 
   get: async (id: string): Promise<Diff> => {
-    const response = await api.get(`/api/diff?id=${id}`)
-    return response.data
+    return DefaultService.getDiff(id)
   },
 }

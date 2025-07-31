@@ -2,28 +2,19 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import Header from '../components/Header'
 import MonacoEditor from '../components/MonacoEditor'
-
-interface PasteData {
-  id: string
-  text: string
-  language: string
-  title: string
-}
+import { pasteService } from '../services/api'
+import type { Paste } from '../generated'
 
 export default function PastePage() {
   const [searchParams] = useSearchParams()
   const id = searchParams.get('id')
 
-  // Use the JSON API directly
+  // Use the auto-generated OpenAPI client
   const { data: pasteData, isLoading, error } = useQuery({
     queryKey: ['paste', id],
-    queryFn: async (): Promise<PasteData> => {
+    queryFn: async (): Promise<Paste> => {
       if (!id) throw new Error('No paste ID provided')
-      const response = await fetch(`/api/paste?id=${id}`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch paste: ${response.status}`)
-      }
-      return response.json()
+      return pasteService.get(id)
     },
     enabled: !!id,
   })

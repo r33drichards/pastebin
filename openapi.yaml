@@ -1,0 +1,197 @@
+openapi: 3.1.0
+info:
+  title: Pastebin API
+  description: A simple pastebin service with Monaco editor
+  version: 1.0.0
+  contact:
+    name: Pastebin API Support
+servers:
+  - url: http://localhost:8000
+    description: Development server
+paths:
+  /api/paste:
+    post:
+      summary: Create a new paste
+      operationId: createPaste
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: The text content of the paste
+                lang:
+                  type: string
+                  description: The programming language for syntax highlighting
+              required:
+                - text
+                - lang
+      responses:
+        '302':
+          description: Paste created successfully
+          headers:
+            Location:
+              description: URL of the created paste
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+    get:
+      summary: Get a paste by ID
+      operationId: getPaste
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The paste ID
+      responses:
+        '200':
+          description: Paste retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Paste'
+        '404':
+          description: Paste not found
+        '500':
+          description: Internal server error
+  /api/diff:
+    post:
+      summary: Create a new diff
+      operationId: createDiff
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                original:
+                  type: string
+                  description: The original text
+                modified:
+                  type: string
+                  description: The modified text
+              required:
+                - original
+                - modified
+      responses:
+        '302':
+          description: Diff created successfully
+          headers:
+            Location:
+              description: URL of the created diff
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+    get:
+      summary: Get a diff by ID
+      operationId: getDiff
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The diff ID
+      responses:
+        '200':
+          description: Diff retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diff'
+        '404':
+          description: Diff not found
+        '500':
+          description: Internal server error
+  /api/complete:
+    post:
+      summary: Get code completion suggestions
+      operationId: getCompletion
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: The text to get completions for
+              required:
+                - text
+      responses:
+        '200':
+          description: Completions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+        '500':
+          description: Internal server error
+  /health:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+components:
+  schemas:
+    Paste:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The paste ID
+        text:
+          type: string
+          description: The paste content
+        language:
+          type: string
+          description: The programming language
+        title:
+          type: string
+          description: The paste title (optional)
+      required:
+        - id
+        - text
+        - language
+    Diff:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The diff ID
+        oldText:
+          type: string
+          description: The original text
+        newText:
+          type: string
+          description: The modified text
+      required:
+        - id
+        - oldText
+        - newText
+    CompletionResponse:
+      type: object
+      properties:
+        completions:
+          type: array
+          items:
+            type: string
+          description: List of completion suggestions
+      required:
+        - completions 

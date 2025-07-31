@@ -4,7 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { DiffEditor } from '@monaco-editor/react'
 import Header from '../components/Header'
 import { diffService } from '../services/api'
-import { Diff } from '../types'
+import type { Diff } from '../generated'
 
 export default function DiffPage() {
   const navigate = useNavigate()
@@ -19,11 +19,7 @@ export default function DiffPage() {
     queryKey: ['diff', id],
     queryFn: async (): Promise<Diff> => {
       if (!id) throw new Error('No diff ID provided')
-      const response = await fetch(`/api/diff?id=${id}`)
-      if (!response.ok) {
-        throw new Error(`Failed to fetch diff: ${response.status}`)
-      }
-      return response.json()
+      return diffService.get(id)
     },
     enabled: !!id,
   })

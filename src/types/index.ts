@@ -1,22 +1,5 @@
-// Core types for the Pastebin service
-// These align with the protobuf definitions in proto/pastebin.proto
-
-export interface Paste {
-  id: string
-  text: string
-  language: string
-  title?: string
-}
-
-export interface Diff {
-  id: string
-  oldText: string
-  newText: string
-}
-
-export interface CompletionResponse {
-  completions: string[]
-}
+// Re-export auto-generated types from OpenAPI
+export type { Paste, Diff, CompletionResponse } from '../generated'
 
 // Request/Response types for API calls
 export interface CreatePasteRequest {
