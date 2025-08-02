@@ -21,6 +21,12 @@ export default function Header({ children }: HeaderProps) {
       >
         DIFF
       </Link>
+      <Link 
+        className={`py-2 px-4 font-bold ${location.pathname === '/buffers' ? 'text-blue-600' : 'text-black'}`} 
+        to="/buffers"
+      >
+        BUFFERS
+      </Link>
       {children}
     </div>
   )

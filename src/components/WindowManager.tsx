@@ -52,13 +52,15 @@ export default function WindowManager({ initialContent = '', language = 'javascr
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        console.log('WindowManager: Command+K pressed')
         e.preventDefault()
+        e.stopPropagation()
         setShowCommandPalette(true)
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('keydown', handleKeyDown, true) // Use capture phase
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
   }, [])
 
   useEffect(() => {
