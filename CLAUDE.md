@@ -171,3 +171,12 @@ pkill doesn't kill the process, instead use the `./kill-run` script which ensure
 you have a mcp playwright server that you should use to debug the application. 
 
 
+
+
+The build is taking too long. Let me check what's happening with the application by running it directly without the long build:
+
+● Bash(pnpm dev)
+  ⎿  No (tell Claude what to do differently)
+
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ > its okay if the build takes a long time, wait for it to finish and use that    
