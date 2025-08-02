@@ -3,14 +3,14 @@ use pnpm for this project
 you can build and run the project with 
 
 ```
-nix run .
+./kill-run
 ```
 
 the build configuration lives in flake.nix 
 
 
 ```
- nix run .
+./kill-run      
 warning: Git tree '/Users/robertwendt/pastebin' is dirty
 trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> for documentation and migration instructions
 error: builder for '/nix/store/qa2xsmac3hafaipyf8n2nw5bd48zxnwd-pbin-frontend-1.0.0.drv' failed with exit code 1;
@@ -44,7 +44,7 @@ to fix this set the hash to an empty string in flake.nix
 then run again to get the hash 
 
 
-➜  pastebin git:(main) ✗ nix run .                                                                                                                                 ~/pastebin
+➜  pastebin git:(main) ✗ ./kill-run                                                                                                                                 ~/pastebin
 warning: Git tree '/Users/robertwendt/pastebin' is dirty
 trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> for documentation and migration instructions
 warning: found empty hash, assuming 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
@@ -66,7 +66,7 @@ set the hash to the hash you got from the previous run and then run again
 this is an error that can occur when making new files in the project. they need to be added to git for nix to recognize them. 
 ```
 
-➜  pastebin git:(main) ✗ nix run .                                                                                                                                 ~/pastebin
+➜  pastebin git:(main) ✗ ./kill-run                                                                                                                                 ~/pastebin
 warning: Git tree '/Users/robertwendt/pastebin' is dirty
 trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> for documentation and migration instructions
 error: builder for '/nix/store/vyfq7fjrbd64y76f42wq33p4idlxbz2p-pbin-frontend-1.0.0.drv' failed with exit code 2;
@@ -113,7 +113,7 @@ Untracked files:
 no changes added to commit (use "git add" and/or "git commit -a")
 ➜  pastebin git:(main) ✗ rm C                                                                                                                                      ~/pastebin
 ➜  pastebin git:(main) ✗ git add .                                                                                                                                 ~/pastebin
-➜  pastebin git:(main) ✗ nix run .                                                                                                                                 ~/pastebin
+➜  pastebin git:(main) ✗ ./kill-run                                                                                                                                 ~/pastebin
 warning: Git tree '/Users/robertwendt/pastebin' is dirty
 trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> for documentation and migration instructions
 error: builder for '/nix/store/mspmlinr0xc380klbk1pj57p0lbmq9kz-pbin-frontend-1.0.0.drv' failed with exit code 2;
@@ -141,7 +141,7 @@ the final error message here is because of an application error, but the build w
 the application runs on port 8000 
 
 ```
-➜  pastebin git:(main) ✗ nix run .                                                                                                                                 ~/pastebin
+➜  pastebin git:(main) ✗ ./kill-run                                                                                                                                 ~/pastebin
 warning: Git tree '/Users/robertwendt/pastebin' is dirty
 trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> for documentation and migration instructions
 {"level":"info","ts":1754091631.9089239,"caller":"pbin/main.go:682","msg":"starting_server","port":"8000"}
@@ -149,7 +149,7 @@ trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and wil
 
 
 
-⏺ Bash(pkill -f "nix run" && nix run . &)
+⏺ Bash(pkill -f "nix run" && ./kill-run &)
   ⎿  trace: evaluation warning: darwin.apple_sdk_11_0.callPackage: deprecated and will be removed in Nixpkgs 25.11; see <https://nixos.org/manual/nixpkgs/stable/#sec-darwin> 
      for documentation and migration instructions
      these 2 derivations will be built:

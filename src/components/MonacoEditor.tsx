@@ -149,9 +149,12 @@ export default function MonacoEditor({
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, onRunCode)
     }
 
-    // Prevent Monaco's default Command+K behavior to allow WindowManager to handle it
+    // Override Cmd+K / Ctrl+K to trigger ninja-keys
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
-      // Do nothing - let WindowManager handle Command+K
+      const ninjaKeys = document.querySelector('ninja-keys') as any
+      if (ninjaKeys && ninjaKeys.open) {
+        ninjaKeys.open()
+      }
     })
 
     editor.focus()

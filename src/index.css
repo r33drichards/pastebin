@@ -28,3 +28,34 @@
   gap: 10px;
   padding: 10px;
 }
+
+/* Ninja Keys Dark Mode Support */
+.dark ninja-keys {
+  --ninja-backdrop-filter: blur(2px);
+  --ninja-overflow-background: rgba(0, 0, 0, 0.7);
+  --ninja-text-color: rgb(229, 231, 235);
+  --ninja-modal-background: rgb(31, 41, 55);
+  --ninja-modal-shadow: rgb(0 0 0 / 50%) 0px 16px 70px;
+  --ninja-secondary-background-color: rgb(55, 65, 81);
+  --ninja-secondary-text-color: rgb(156, 163, 175);
+  --ninja-selected-background: rgb(75, 85, 99);
+  --ninja-icon-color: rgb(156, 163, 175);
+  --ninja-placeholder-color: rgb(107, 114, 128);
+  --ninja-group-text-color: rgb(107, 114, 128);
+  --ninja-footer-background: rgba(55, 65, 81, 0.7);
+}
+
+/* Custom styling for ninja-keys */
+ninja-keys {
+  --ninja-width: 500px;
+  --ninja-z-index: 9999;
+}
+
+ninja-keys::part(ninja-action) {
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+ninja-keys::part(ninja-selected) {
+  background: rgba(110, 94, 210, 0.15);
+}

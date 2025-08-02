@@ -1,19 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import MonacoEditor from './MonacoEditor'
-import 'ninja-keys'
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'ninja-keys': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
-        data?: any[]
-        placeholder?: string
-        openHotkey?: string
-        hideBreadcrumbs?: boolean
-      }, HTMLElement>
-    }
-  }
-}
+import { useNinjaKeys } from '../hooks/useNinjaKeys'
 
 interface Buffer {
   id: string
@@ -35,7 +22,6 @@ export default function BufferManager({ initialContent = '', language = 'javascr
     { id: 'output-1', name: 'output', content: 'Output buffer ready...', type: 'output', language: 'text' }
   ])
   const [activeBufferId, setActiveBufferId] = useState('text-1')
-  const ninjaRef = useRef<HTMLElement>(null)
 
   const activeBuffer = buffers.find(b => b.id === activeBufferId)
 
@@ -87,71 +73,40 @@ export default function BufferManager({ initialContent = '', language = 'javascr
     }
   }, [buffers])
 
-  // Update ninja-keys data when buffers change
-  useEffect(() => {
-    if (!ninjaRef.current) return
-
-    const bufferActions = buffers.map((buffer) => ({
+  // Create ninja-keys actions
+  const ninjaActions = [
+    ...buffers.map((buffer) => ({
       id: `switch-${buffer.id}`,
       title: `${buffer.name} (${buffer.type})`,
-      section: 'Buffers',
-      handler: () => {
-        switchBuffer(buffer.id)
-      }
-    }))
-
-    const createActions = [
-      {
-        id: 'create-text-buffer',
-        title: 'New text buffer',
-        section: 'Create',
-        handler: () => {
-          createBuffer('text')
-        }
-      },
-      {
-        id: 'create-output-buffer',
-        title: 'New output buffer',
-        section: 'Create',
-        handler: () => {
-          createBuffer('output')
-        }
-      }
-    ]
-
-    const deleteActions = buffers.length > 1 ? buffers.map((buffer) => ({
-      id: `delete-${buffer.id}`,
-      title: `Delete ${buffer.name}`,
-      section: 'Delete',
-      handler: () => {
-        deleteBuffer(buffer.id)
-      }
-    })) : []
-
-    const renameActions = buffers.map((buffer) => ({
+      handler: () => switchBuffer(buffer.id)
+    })),
+    {
+      id: 'create-text-buffer',
+      title: 'New text buffer',
+      handler: () => createBuffer('text')
+    },
+    {
+      id: 'create-output-buffer',
+      title: 'New output buffer',
+      handler: () => createBuffer('output')
+    },
+    ...buffers.map((buffer) => ({
       id: `rename-${buffer.id}`,
       title: `Rename ${buffer.name}`,
-      section: 'Edit',
-      handler: () => {
-        renameBuffer(buffer.id)
-      }
-    }))
+      handler: () => renameBuffer(buffer.id)
+    })),
+    ...(buffers.length > 1 ? buffers.map((buffer) => ({
+      id: `delete-${buffer.id}`,
+      title: `Delete ${buffer.name}`,
+      handler: () => deleteBuffer(buffer.id)
+    })) : [])
+  ]
 
-    ;(ninjaRef.current as any).data = [...bufferActions, ...createActions, ...renameActions, ...deleteActions]
-  }, [buffers, switchBuffer, createBuffer, deleteBuffer, renameBuffer])
-
-  // Check if dark mode is enabled
-  const isDarkMode = document.documentElement.classList.contains('dark')
+  // Use the ninja-keys hook
+  useNinjaKeys(ninjaActions)
 
   return (
     <div className="h-full w-full relative bg-white dark:bg-gray-800">
-      <ninja-keys 
-        ref={ninjaRef}
-        className={isDarkMode ? 'dark' : ''}
-        placeholder="Search buffers or create new..."
-        openHotkey="cmd+k,ctrl+k"
-        hideBreadcrumbs
-      />
       
       <div className="h-full flex flex-col">
         <div className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
