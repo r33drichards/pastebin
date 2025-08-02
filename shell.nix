@@ -21,7 +21,7 @@ pkgs.mkShell {
     goEnv
     pkgs.gomod2nix
     pkgs.just
-    pkgs.terraform
+    pkgs.opentofu
     pkgs.awscli
     pkgs.git
     pkgs.nixfmt
