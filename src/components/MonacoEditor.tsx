@@ -149,12 +149,7 @@ export default function MonacoEditor({
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, onRunCode)
     }
 
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
-      const ninjaKeys = document.querySelector('ninja-keys') as any
-      if (ninjaKeys) {
-        ninjaKeys.open()
-      }
-    })
+    // Removed ninja-keys integration - using custom WindowManager palette instead
 
     editor.focus()
   }

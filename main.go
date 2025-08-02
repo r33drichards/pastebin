@@ -421,6 +421,66 @@ func handleDiff(writer http.ResponseWriter, request *http.Request) {
 	sugar := zap.L().Sugar()
 
 	switch request.Method {
+	case "PUT":
+		sugar.Infow("diff_update_request_started", "method", request.Method, "content_length", request.ContentLength)
+
+		if err := request.ParseForm(); err != nil {
+			sugar.Errorw("failed_to_parse_form", "error", err)
+			fmt.Fprintf(writer, "ParseForm() err: %v", err)
+			return
+		}
+
+		id := request.URL.Query().Get("id")
+		if id == "" {
+			sugar.Warnw("diff_update_request_without_id")
+			writer.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		original := request.FormValue("original")
+		modified := request.FormValue("modified")
+
+		sugar.Infow("diff_update_data_received",
+			"id", id,
+			"original_length", len(original),
+			"modified_length", len(modified),
+			"has_original", original != "",
+			"has_modified", modified != "",
+		)
+
+		sugar.Infow("attempting_to_update_diff",
+			"id", id,
+			"original_length", len(original),
+			"modified_length", len(modified),
+		)
+
+		err := dataStore.UpdateDiff(id, original, modified)
+
+		if err != nil {
+			sugar.Errorw("failed_to_update_diff",
+				"id", id,
+				"error", err,
+				"original_length", len(original),
+				"modified_length", len(modified),
+			)
+			log.Printf("Failed to update diff: %v", err)
+			writer.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		sugar.Infow("diff_successfully_updated",
+			"id", id,
+			"original_length", len(original),
+			"modified_length", len(modified),
+		)
+
+		// Return success response
+		writer.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(writer).Encode(map[string]interface{}{
+			"id":      id,
+			"oldText": original,
+			"newText": modified,
+		})
 	case "POST":
 		sugar.Infow("diff_write_request_started", "method", request.Method, "content_length", request.ContentLength)
 
@@ -555,7 +615,6 @@ func (c completionResponse) ToJsonBytes() ([]byte, error) {
 func handleCompletion(sugar *zap.SugaredLogger) func(writer http.ResponseWriter, request *http.Request) {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		openapikey := os.Getenv("OPENAPIKEY")
-		// openapikey := "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"
 		if openapikey == "" {
 			sugar.Error("OPENAPIKEY not set")
 			writer.WriteHeader(http.StatusInternalServerError)

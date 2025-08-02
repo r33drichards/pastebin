@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { DiffEditor } from '@monaco-editor/react'
@@ -25,12 +25,12 @@ export default function DiffPage() {
   })
 
   // Update state when diff data is loaded
-  useState(() => {
+  useEffect(() => {
     if (diffData) {
       setOriginal(diffData.oldText)
       setModified(diffData.newText)
     }
-  })
+  }, [diffData])
 
   const createDiffMutation = useMutation({
     mutationFn: () => diffService.create(original, modified),
@@ -39,10 +39,26 @@ export default function DiffPage() {
     },
   })
 
+  const updateDiffMutation = useMutation({
+    mutationFn: () => {
+      if (!id) throw new Error('No diff ID for update')
+      return diffService.update(id, original, modified)
+    },
+    onSuccess: () => {
+      // Optionally show a success message or update the URL
+    },
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (original || modified) {
-      createDiffMutation.mutate()
+      if (id) {
+        // Update existing diff
+        updateDiffMutation.mutate()
+      } else {
+        // Create new diff
+        createDiffMutation.mutate()
+      }
     }
   }
 
@@ -53,15 +69,35 @@ export default function DiffPage() {
   if (id && diffData) {
     return (
       <div className="container-xl h-screen overflow-y-hidden flex flex-col">
-        <Header />
+        <Header>
+          <button
+            type="button"
+            className="py-2 px-4 font-semibold rounded-lg shadow-md text-white bg-blue-500 hover:bg-blue-700 ml-2"
+            onClick={handleSubmit}
+            disabled={updateDiffMutation.isPending || (!original && !modified)}
+          >
+            <i className="fas fa-save"></i> Save Changes
+          </button>
+        </Header>
         <div className="flex-grow">
           <DiffEditor
-            original={diffData.oldText}
-            modified={diffData.newText}
+            original={original}
+            modified={modified}
             language="text"
             theme={theme}
+            onMount={(editor) => {
+              const modifiedEditor = editor.getModifiedEditor()
+              const originalEditor = editor.getOriginalEditor()
+              
+              modifiedEditor.onDidChangeModelContent(() => {
+                setModified(modifiedEditor.getValue())
+              })
+              
+              originalEditor.onDidChangeModelContent(() => {
+                setOriginal(originalEditor.getValue())
+              })
+            }}
             options={{
-              readOnly: true,
               automaticLayout: true,
             }}
           />

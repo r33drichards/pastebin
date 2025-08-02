@@ -23,6 +23,7 @@ type DataStore interface {
 	AddPaste(text, lang, title string) (string, error)
 	GetDiff(id string) (*Diff, error)
 	AddDiff(oldText, newText string) (string, error)
+	UpdateDiff(id, oldText, newText string) error
 	Close() error
 }
 
@@ -495,6 +496,83 @@ func (b *BoltStore) AddDiff(oldText, newText string) (string, error) {
 	return id, nil
 }
 
+// UpdateDiff updates an existing diff in BoltDB
+func (b *BoltStore) UpdateDiff(id, oldText, newText string) error {
+	sugar := zap.L().Sugar()
+
+	sugar.Infow("updating_diff",
+		"id", id,
+		"old_text_length", len(oldText),
+		"new_text_length", len(newText),
+	)
+
+	diff := Diff{
+		PK:      id,
+		SK:      time.Now().Format(time.RFC3339),
+		OldText: oldText,
+		NewText: newText,
+	}
+
+	sugar.Info("starting_bolt_transaction_for_diff_update")
+	err := b.db.Update(func(tx *bolt.Tx) error {
+		sugar.Info("getting_diffs_bucket")
+		bucket := tx.Bucket([]byte("diffs"))
+		if bucket == nil {
+			sugar.Error("diffs_bucket_not_found")
+			return fmt.Errorf("diffs bucket not found")
+		}
+
+		// Check if the diff exists
+		existing := bucket.Get([]byte(id))
+		if existing == nil {
+			sugar.Errorw("diff_not_found_for_update", "id", id)
+			return fmt.Errorf("diff not found")
+		}
+
+		sugar.Info("marshaling_diff_to_json")
+		encoded, err := json.Marshal(diff)
+		if err != nil {
+			sugar.Errorw("failed_to_marshal_diff", "error", err)
+			return err
+		}
+
+		sugar.Infow("writing_updated_diff_to_bolt",
+			"id", id,
+			"encoded_size", len(encoded),
+		)
+
+		err = bucket.Put([]byte(id), encoded)
+		if err != nil {
+			sugar.Errorw("failed_to_write_updated_diff_to_bolt",
+				"id", id,
+				"error", err,
+			)
+			return err
+		}
+
+		sugar.Infow("diff_updated_successfully",
+			"id", id,
+			"encoded_size", len(encoded),
+		)
+		return nil
+	})
+
+	if err != nil {
+		sugar.Errorw("bolt_transaction_failed_for_diff_update",
+			"id", id,
+			"error", err,
+		)
+		return err
+	}
+
+	sugar.Infow("diff_updated_successfully",
+		"id", id,
+		"old_text_length", len(oldText),
+		"new_text_length", len(newText),
+	)
+	return nil
+}
+
 // Close closes the BoltDB connection
 func (b *BoltStore) Close() error {
 	return b.db.Close()
@@ -624,6 +702,67 @@ func (d *DynamoStore) AddDiff(oldText, newText string) (string, error) {
 	}
 
 	return id, nil
+}
+
+// UpdateDiff updates an existing diff in DynamoDB
+func (d *DynamoStore) UpdateDiff(id, oldText, newText string) error {
+	sugar := zap.L().Sugar()
+
+	sugar.Infow("updating_diff_in_dynamo",
+		"id", id,
+		"old_text_length", len(oldText),
+		"new_text_length", len(newText),
+		"table_name", d.tableName,
+	)
+
+	// First check if the diff exists
+	_, err := d.GetDiff(id)
+	if err != nil {
+		sugar.Errorw("failed_to_get_existing_diff_for_update", "id", id, "error", err)
+		return fmt.Errorf("diff not found")
+	}
+
+	// Update the diff with new data
+	diff := Diff{
+		PK:      id,
+		SK:      time.Now().Format(time.RFC3339),
+		OldText: oldText,
+		NewText: newText,
+	}
+
+	sugar.Info("marshaling_diff_for_dynamo_update")
+	av, err := dynamodbattribute.MarshalMap(diff)
+	if err != nil {
+		sugar.Errorw("failed_to_marshal_diff_for_dynamo_update", "error", err)
+		return err
+	}
+
+	sugar.Infow("writing_updated_diff_to_dynamo",
+		"id", id,
+		"table_name", d.tableName,
+		"item_size", len(av),
+	)
+
+	_, err = d.svc.PutItem(&dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(d.tableName),
+	})
+	if err != nil {
+		sugar.Errorw("failed_to_write_updated_diff_to_dynamo",
+			"id", id,
+			"table_name", d.tableName,
+			"error", err,
+		)
+		return err
+	}
+
+	sugar.Infow("diff_updated_successfully_in_dynamo",
+		"id", id,
+		"old_text_length", len(oldText),
+		"new_text_length", len(newText),
+		"table_name", d.tableName,
+	)
+	return nil
 }
 
 // Close is a no-op for DynamoDB as it doesn't require explicit closing

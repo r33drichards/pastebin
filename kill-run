@@ -1,0 +1,3 @@
+#! /usr/bin/env nix-shell
+#! nix-shell -i bash -p lsof uutils-findutils
+lsof -ti :8000 | xargs kill -9 && nix run . || nix run .

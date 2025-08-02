@@ -61,6 +61,26 @@ export const diffService = {
     return id
   },
 
+  update: async (id: string, original: string, modified: string): Promise<Diff> => {
+    const formData = new URLSearchParams()
+    formData.append('original', original)
+    formData.append('modified', modified)
+    
+    const response = await fetch(`/api/diff?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to update diff: ${response.statusText}`)
+    }
+    
+    return response.json()
+  },
+
   get: async (id: string): Promise<Diff> => {
     return DefaultService.getDiff(id)
   },
